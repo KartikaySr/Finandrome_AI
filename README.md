@@ -1,12 +1,31 @@
 # Finandrome AI
 
-### A clearer perspective on lending.
+### From application to portfolio intelligence. One connected lending workspace.
 
-An AI-assisted lending workspace connecting application intake, human-reviewed decisions and portfolio intelligence. Built by **Kartikay Srivastava**, integrating and extending open-source foundations from the Apache Fineract ecosystem.
+**Finandrome AI** brings loan origination, credit review, evidence management and portfolio analytics into a premium, Web3-inspired interface. Its product vision is simple: give customers, lending teams and analysts a shared view of the lending journey, with AI assistance that keeps its supporting evidence visible.
 
-[Source](https://github.com/KartikaySr/Finandrome_AI) · [Frontend domain](https://finandrome.kartikaysrivastava.in) · [Architecture & 11-phase blueprint](docs/architecture/BLUEPRINT.md) · [Open-source acknowledgements](OPEN_SOURCE_ACKNOWLEDGEMENTS.md)
+[![Frontend checks](https://github.com/KartikaySr/Finandrome_AI/actions/workflows/frontend.yml/badge.svg)](https://github.com/KartikaySr/Finandrome_AI/actions/workflows/frontend.yml)
 
-> **Current milestone: frontend-first, v0.1.0.** The Finandrome interface runs on synthetic browser-local data. Workflow actions are simulations, AI responses are scripted and document handling records metadata only. The imported Java lending backend and BI stack are not connected to this new frontend yet. The frontend domain above is the intended deployment address; repository presence does not establish that a deployment or DNS configuration is live.
+[Source](https://github.com/KartikaySr/Finandrome_AI) · [Frontend domain](https://finandrome.kartikaysrivastava.in) · [Architecture & 11-phase blueprint](docs/architecture/BLUEPRINT.md)
+
+> **Frontend release:** Explore the lending journey with synthetic, browser-local data. AI interactions currently use scripted previews; backend integration is the next milestone. The linked frontend domain is the intended Vercel deployment address.
+
+## The product at a glance
+
+- **One connected journey:** capture an application, review its evidence, record a decision and inspect the resulting simulated loan account.
+- **Six demo personas:** customer, loan officer, credit reviewer, branch manager, auditor and administrator, each with a deliberately scoped workspace.
+- **Four analytics perspectives:** portfolio health, delinquency, repayment behavior and origination, with visible definitions and scoped fixture metrics.
+- **Five AI experience previews:** application briefs, document insights, policy assistance, score explanation and portfolio questions with source context.
+- **A distinctive interface:** charcoal surfaces, lime accents, orbital visuals, responsive navigation, keyboard-friendly controls and reduced-motion preferences.
+- **An engineering foundation:** typed Angular feature modules, centralized state and workflow rules, unit and browser tests, a production build and Vercel configuration.
+
+These counts describe implemented frontend experiences. Live AI, authenticated services and real loan servicing are integration milestones described below.
+
+## Who it is built for
+
+**Customers** need a clear application flow and a visible next step. **Lending teams** need review context, explicit decision stages and traceable activity. **Analysts** need understandable portfolio measures and useful exports. Finandrome's frontend demonstrates how those needs can coexist in one coherent product.
+
+For a portfolio walkthrough, start with the customer intake, follow the same record through staff review and manager approval, then explore its loan detail, analytics and source-linked intelligence preview. This connected demonstration is the core of Finandrome: a working interface across the lending lifecycle, backed by a documented plan for real services.
 
 ## Interface preview
 
@@ -14,13 +33,15 @@ An AI-assisted lending workspace connecting application intake, human-reviewed d
 
 [Landing page](docs/media/finandrome-landing.png) · [Intelligence preview](docs/media/finandrome-intelligence.png) · [Mobile workspace](docs/media/finandrome-mobile.png)
 
-## Why Finandrome?
+## The problem Finandrome solves
 
-Lending is a chain of connected decisions: who applied, what was declared, which evidence is available, who reviewed it, what happened next and how the resulting portfolio behaves. Finandrome brings those perspectives into one product interface.
+A lending workflow spans customers, credit teams, operations and analysts. When application details, supporting evidence, decision history and portfolio reporting sit in separate screens or tools, it becomes difficult to understand a case and its next step.
 
-The frontend is designed to make that chain inspectable. A customer can follow an application. A reviewer can see the context before acting. A manager can distinguish approval from disbursement. An analyst can inspect KPI definitions rather than treating every chart as an answer. The AI experience shows where source evidence belongs in the workflow.
+Finandrome organizes that journey around a shared application record. Customers can complete intake and follow progress. Reviewers can inspect declared financial context and evidence metadata before acting. Managers can distinguish approval from disbursement. Analysts can move from individual accounts to clearly defined portfolio measures.
 
-“Web3-inspired” describes the visual direction: a precise dark interface, orbital product illustration, restrained lime accents, thin structural borders and a connected-system motif. This release has **no wallet connection, token, cryptocurrency, smart contract or on-chain transaction**. These are not prerequisites for a lending platform.
+The intended outcome is clearer handoffs, more inspectable decisions and easier access to lending information. The current frontend demonstrates these workflows; operational improvements will be measured after backend integration.
+
+The Web3-inspired design uses dark surfaces, orbital visuals and restrained lime accents. It is a lending interface; blockchain integration is outside the current architecture.
 
 ## What you can explore now
 
@@ -286,47 +307,12 @@ The current frontend needs **no API key or backend URL**. Do not add model secre
 
 Official references: [Angular deployment](https://angular.dev/tools/cli/deployment), [Angular version compatibility](https://angular.dev/reference/versions), [Vercel domain configuration](https://vercel.com/docs/domains/working-with-domains/add-a-domain).
 
-## Rollout plan
+## Development roadmap
 
-The detailed blueprint contains exactly 11 dependency-ordered phases. The owner has chosen to implement the frontend first, so UI work is intentionally being pulled forward across those phases. This does not mark backend phases complete.
+The [architecture blueprint](docs/architecture/BLUEPRINT.md) covers the full 11-phase rollout, module contracts, data model and evaluation plan. The next integration milestones are authenticated APIs, persistent applications and documents, a Fineract sandbox loan lifecycle, reconciled reporting and evidence-backed AI services.
 
-1. Product definition, provenance and measurable requirements.
-2. Reproducible baseline and source remediation.
-3. Finandrome shell, identity and permission foundation.
-4. Customer intake, application versions and document handling.
-5. Staff review, scoring and controlled approvals.
-6. Real Fineract sandbox lifecycle and recovery.
-7. Warehouse, four dashboards and KPI reconciliation.
-8. AI foundation, evidence store and evaluation harness.
-9. Five AI features and reviewer feedback.
-10. Integrated validation, scale, accessibility and recovery.
-11. Vercel rollout, portfolio release and resume evidence.
+Current frontend validation and its scope are recorded in [FRONTEND-VERIFICATION.md](docs/evidence/FRONTEND-VERIFICATION.md). Performance, AI accuracy and business-impact targets will be reported as achievements only after measurement.
 
-### Next implementation priorities
+## License
 
-- Finish frontend UX/accessibility review and browser regression coverage.
-- Resolve inherited backend migration/dependency/container issues before connecting it.
-- Add a typed API adapter behind the frontend's feature contracts, replacing browser mutations incrementally.
-- Implement authenticated session handling and server-side authorization before accepting private data.
-- Demonstrate one real sandbox Fineract journey before expanding integration breadth.
-- Add durable document processing and evidence-backed live AI after the evaluation suite exists.
-- Reconcile warehouse KPIs and record real benchmark results before publishing performance claims.
-
-## Known boundaries and source issues
-
-- The imported LOS includes two version-8 Flyway migrations; migration strategy must be resolved before backend startup on a fresh database.
-- Its Compose definition references a missing Dockerfile and ports inconsistent with the backend's configured listener.
-- Some inherited dependency/documentation/configuration details require alignment.
-- Inherited auth/storage code is retained for future review; it is not the active Finandrome demo session mechanism.
-- Browser localStorage is editable and does not provide secure authorization or audit guarantees.
-- Uploaded document contents are not stored, parsed, scanned or sent anywhere by the demo.
-- Charts labeled illustrative are not reconstructed historical banking records.
-- The product is a portfolio/sandbox implementation, not a production-regulated lending service.
-
-The complete source assessment, remediation queue, API proposal, data model and rollout gates are in [BLUEPRINT.md](docs/architecture/BLUEPRINT.md).
-
-## Contributions, provenance and licensing
-
-New Finandrome product code is by Kartikay Srivastava. The lending backend, inherited frontend modules and BI pipeline include substantial code from the Apache Fineract ecosystem. See [UPSTREAM.md](UPSTREAM.md) for source snapshots and [OPEN_SOURCE_ACKNOWLEDGEMENTS.md](OPEN_SOURCE_ACKNOWLEDGEMENTS.md) for credits.
-
-Distributed under the [Apache License, Version 2.0](LICENSE), subject to applicable third-party notices and dependency licenses. Original copyright/license headers remain in inherited source. Finandrome does not claim Apache endorsement or exclusive authorship of those foundations.
+[Apache License 2.0](LICENSE). Third-party notices and source provenance are maintained in [OPEN_SOURCE_ACKNOWLEDGEMENTS.md](OPEN_SOURCE_ACKNOWLEDGEMENTS.md) and [UPSTREAM.md](UPSTREAM.md).

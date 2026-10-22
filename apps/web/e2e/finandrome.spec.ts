@@ -263,6 +263,7 @@ test('a draft can be edited without creating a duplicate application', async ({ 
   await page.getByRole('textbox', { name: 'Email address' }).fill('draft@example.com');
   await page.getByRole('textbox', { name: 'Business / purpose' }).fill('Draft studio');
   await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+  await expect(page).toHaveURL(/\/workspace\/applications\/FIN-[^/]+$/);
   const detailUrl = page.url();
   await page.getByRole('link', { name: 'Edit draft' }).click();
   await expect(page.getByRole('textbox', { name: 'Full name' })).toHaveValue('Draft Applicant');
