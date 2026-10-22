@@ -1,0 +1,179 @@
+<!-- Copyright 2026 Kartikay Srivastava. SPDX-License-Identifier: Apache-2.0 -->
+<div
+  class="workspace"
+  [class.compact]="store.state().preferences.compact"
+  [class.reduce-motion]="store.state().preferences.reducedMotion"
+>
+  @if (mobile()) {
+    <button
+      class="sidebar-scrim"
+      type="button"
+      aria-label="Close navigation"
+      (click)="mobile.set(false)"
+    ></button>
+  }
+  <aside class="sidebar" [class.mobile-open]="mobile()">
+    <a class="wordmark" routerLink="/"
+      ><span class="brand-mark">f<span>.</span></span
+      >finandrome<span class="brand-ai">AI</span></a
+    >
+    <div class="workspace-switch">
+      <span class="workspace-avatar">F</span
+      ><span>Finandrome sandbox<small>Synthetic institution</small></span
+      ><los-icon name="down" />
+    </div>
+    <p class="nav-label">WORKSPACE</p>
+    <nav aria-label="Workspace navigation">
+      @for (item of nav(); track item.path) {
+        <a
+          [routerLink]="'/workspace/' + item.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.path === 'applications' }"
+          (click)="mobile.set(false)"
+          ><los-icon [name]="item.icon" /><span>{{ item.label }}</span>
+          @if (item.path === 'review' && store.reviewQueue().length) {
+            <small class="nav-count">{{ store.reviewQueue().length }}</small>
+          }
+          @if (item.path === 'ai') {
+            <span class="ai-tag">PREVIEW</span>
+          }
+        </a>
+      }
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-insight">
+        <span class="live-dot"></span
+        ><span>A clearer view of credit.<small>Explore. Review. Understand.</small></span>
+      </div>
+      <a routerLink="/workspace/settings" routerLinkActive="active" (click)="mobile.set(false)"
+        ><los-icon name="settings" />Settings</a
+      ><a routerLink="/open-source"
+        ><los-icon name="globe" />Open foundations <los-icon name="arrow" /></a
+      ><button type="button" class="profile-button" (click)="logout()">
+        <span class="avatar lime">KS</span
+        ><span
+          >{{ store.state().preferences.displayName }}<small>{{ store.role() }}</small></span
+        ><los-icon name="logout" />
+      </button>
+    </div>
+  </aside>
+  <div class="workspace-main">
+    <header class="topbar">
+      <button
+        class="icon-button mobile-toggle"
+        type="button"
+        aria-label="Open navigation"
+        (click)="mobile.set(true)"
+      >
+        <los-icon name="menu" />
+      </button>
+      <div class="topbar-breadcrumb">
+        <span>Workspace</span><los-icon name="chevron" /><strong>Finandrome</strong
+        ><span class="demo-badge">DEMO</span>
+      </div>
+      <div class="global-search">
+        <los-icon name="search" /><input
+          aria-label="Search applications globally"
+          placeholder="Search applications…"
+          [ngModel]="query()"
+          (ngModelChange)="query.set($event)"
+        />
+        @if (query().length >= 2) {
+          <div class="search-results">
+            @for (item of searchResults(); track item.id) {
+              <button type="button" (click)="openResult(item.id)">
+                <span
+                  >{{ item.name }}<small>{{ item.id }}</small></span
+                ><los-icon name="arrow" />
+              </button>
+            } @empty {
+              <p>No matching applications in your demo scope.</p>
+            }
+            <button class="search-close" type="button" (click)="query.set('')">Close search</button>
+          </div>
+        }
+      </div>
+      <label class="role-switch"
+        ><span class="sr-only">Demo persona</span
+        ><select [ngModel]="store.role()" (ngModelChange)="switchRole($event)">
+          @for (role of roles; track role) {
+            <option [value]="role">{{ role }}</option>
+          }
+        </select></label
+      >
+      <div class="notification-wrap">
+        <button
+          class="icon-button"
+          type="button"
+          aria-label="Toggle recent activity"
+          [attr.aria-expanded]="notifications()"
+          (click)="notifications.set(!notifications())"
+        >
+          <los-icon name="bell" /><span class="notification-dot"></span>
+        </button>
+        @if (notifications()) {
+          <section class="notification-panel">
+            <h3>Recent activity</h3>
+            @for (
+              event of store.state().preferences.notifications ? store.events().slice(0, 3) : [];
+              track event.id
+            ) {
+              <p>
+                {{ event.action
+                }}<small>{{ event.entity }} · {{ event.date | date: 'shortTime' }}</small>
+              </p>
+            } @empty {
+              <p>
+                {{
+                  store.state().preferences.notifications
+                    ? 'No recent activity in this demo scope.'
+                    : 'Activity notifications are disabled in Settings.'
+                }}
+              </p>
+            }
+            <a routerLink="/workspace/audit" (click)="notifications.set(false)"
+              >View activity log ↗</a
+            >
+          </section>
+        }
+      </div>
+      <a class="avatar topbar-avatar" routerLink="/workspace/profile" aria-label="Open your profile"
+        >KS</a
+      >
+    </header>
+    <div class="preview-strip">
+      <span><span class="live-dot"></span>Frontend preview</span>
+      <p>Synthetic data · browser-local actions · AI responses are scripted · no money movement</p>
+      <a routerLink="/workspace/settings">Manage demo <los-icon name="arrow" /></a>
+    </div>
+    @if (!store.storageAvailable()) {
+      <p class="notice warning" role="status">
+        Browser storage is unavailable. Changes may be lost after refresh.
+      </p>
+    }
+    <main class="page-content" id="main-content"><router-outlet /></main>
+    <footer class="workspace-footer">
+      <span>FINANDROME / A CLEARER PERSPECTIVE</span
+      ><span>All values in INR · Synthetic sandbox</span
+      ><a
+        href="https://github.com/KartikaySr/Finandrome_AI"
+        target="_blank"
+        rel="noopener noreferrer"
+        >View source ↗</a
+      >
+    </footer>
+  </div>
+  @if (store.toast()) {
+    <div class="toast" role="status">
+      <los-icon name="check" /><span>{{ store.toast() }}</span
+      ><button
+        type="button"
+        class="icon-button"
+        aria-label="Dismiss notification"
+        (click)="store.toast.set('')"
+      >
+        <los-icon name="close" />
+      </button>
+    </div>
+  }
+</div>

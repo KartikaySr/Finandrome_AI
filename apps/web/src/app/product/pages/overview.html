@@ -1,0 +1,158 @@
+<!-- Copyright 2026 Kartikay Srivastava. SPDX-License-Identifier: Apache-2.0 -->
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">YOUR LENDING COMMAND CENTER</p>
+    <h1>A clearer perspective<span class="accent">.</span></h1>
+    <p>Every application. Every decision. The bigger picture.</p>
+  </div>
+  <div class="heading-actions">
+    <button type="button" class="button outline small" (click)="export()">
+      <los-icon name="download" />Export portfolio
+    </button>
+    @if (store.canCreate()) {
+      <a routerLink="/workspace/applications/new" class="button primary small"
+        ><los-icon name="plus" />New application</a
+      >
+    }
+  </div>
+</div>
+<section class="stat-grid" aria-label="Workspace metrics">
+  <article class="stat-card">
+    <div class="stat-top"><span>Outstanding portfolio</span><los-icon name="wallet" /></div>
+    <strong>{{ compactMoney(store.portfolio()) }}</strong
+    ><span class="stat-foot"
+      ><span class="live-dot"></span>{{ store.loans().length }} synthetic loan accounts</span
+    >
+  </article>
+  <article class="stat-card">
+    <div class="stat-top"><span>Applications</span><los-icon name="file" /></div>
+    <strong>{{ store.applications().length.toString().padStart(2, '0') }}</strong
+    ><span class="stat-foot">{{ store.reviewQueue().length }} awaiting a next step</span>
+  </article>
+  <article class="stat-card">
+    <div class="stat-top"><span>Approved & disbursed</span><los-icon name="check" /></div>
+    <strong>{{ approved().toString().padStart(2, '0') }}</strong
+    ><span class="stat-foot">Within the selected demo scope</span>
+  </article>
+  <article class="stat-card">
+    <div class="stat-top"><span>Portfolio at risk · 30+</span><los-icon name="shield" /></div>
+    <strong>{{ store.par30() | number: '1.1-1' }}<small>%</small></strong
+    ><span class="stat-foot">Principal-weighted · ≥30 days overdue</span>
+  </article>
+</section>
+<div class="overview-grid">
+  <section class="panel portfolio-panel">
+    <div class="panel-heading">
+      <div>
+        <p class="eyebrow">LENDING ACTIVITY</p>
+        <h2>Momentum, in perspective.</h2>
+      </div>
+      <span class="soft-badge">OCT 2026 · FIXTURE</span>
+    </div>
+    <div class="chart-topline">
+      <strong>89 <small>illustrative applications</small></strong
+      ><span class="chart-key"><i></i>Application activity</span>
+    </div>
+    <los-chart />
+    <p class="subtle">Historical illustration is independent of the live browser fixture above.</p>
+  </section>
+  <section class="panel attention-panel">
+    <div class="panel-heading">
+      <h2>On your radar</h2>
+      <los-icon name="arrow" />
+    </div>
+    <a routerLink="/workspace/applications" class="attention-item"
+      ><span class="attention-icon"><los-icon name="file" /></span
+      ><span
+        ><strong>{{ store.reviewQueue().length }} applications need a next step</strong
+        ><small>Keep the lending journey moving</small></span
+      ><los-icon name="chevron" /></a
+    ><a routerLink="/workspace/documents" class="attention-item"
+      ><span class="attention-icon amber"><los-icon name="shield" /></span
+      ><span
+        ><strong>{{ store.documents().length - verified() }} documents awaiting review</strong
+        ><small>Review evidence before decisions</small></span
+      ><los-icon name="chevron"
+    /></a>
+    <div class="intelligence-promo">
+      <span class="ai-symbol"><los-icon name="spark" /></span>
+      <p class="eyebrow">INTELLIGENCE / PREVIEW</p>
+      <h3>Context.<br />Without the noise.</h3>
+      <p>Explore evidence-backed review concepts with clearly labeled scripted responses.</p>
+      <a routerLink="/workspace/ai" class="text-link"
+        >Explore intelligence <los-icon name="arrow"
+      /></a>
+    </div>
+  </section>
+</div>
+<section class="panel">
+  <div class="panel-heading">
+    <div>
+      <p class="eyebrow">ORIGINATION</p>
+      <h2>Recent applications</h2>
+    </div>
+    <a routerLink="/workspace/applications" class="text-link">View all <los-icon name="arrow" /></a>
+  </div>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Applicant</th>
+          <th>Product</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Submitted</th>
+          <th><span class="sr-only">Open</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (app of store.applications().slice(0, 5); track app.id) {
+          <tr>
+            <td>
+              <a class="person-cell" [routerLink]="['/workspace/applications', app.id]"
+                ><span class="avatar" [class.lime]="$index === 0">{{ app.initials }}</span
+                ><span
+                  >{{ app.name }}<small>{{ app.id }}</small></span
+                ></a
+              >
+            </td>
+            <td>{{ app.product }}</td>
+            <td class="number-cell">{{ money(app.amount) }}</td>
+            <td>
+              <span class="status" [attr.data-status]="app.status"><i></i>{{ app.status }}</span>
+            </td>
+            <td>{{ app.created | date: 'dd MMM yyyy' }}</td>
+            <td>
+              <a
+                class="icon-button"
+                [routerLink]="['/workspace/applications', app.id]"
+                [attr.aria-label]="'Open ' + app.name"
+                ><los-icon name="arrow"
+              /></a>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <los-icon name="file" />
+                <h3>No applications yet</h3>
+                <p>Start your first synthetic lending journey.</p>
+                <a routerLink="/workspace/applications/new" class="button primary small"
+                  >Create application</a
+                >
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+<section class="bottom-insights">
+  <div>
+    <span class="live-dot"></span><strong>Connected by design.</strong
+    ><span>Lending → Decisions → Portfolio → Intelligence</span>
+  </div>
+  <a routerLink="/workspace/analytics">Explore the bigger picture <los-icon name="right" /></a>
+</section>

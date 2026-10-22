@@ -1,0 +1,177 @@
+<!-- Copyright 2026 Kartikay Srivastava. SPDX-License-Identifier: Apache-2.0 -->
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">
+      {{
+        mode === 'review'
+          ? 'REVIEW & UNDERWRITING'
+          : mode === 'approvals'
+            ? 'CONTROLLED APPROVALS'
+            : 'LOAN ORIGINATION'
+      }}
+    </p>
+    <h1>{{ title }}</h1>
+    <p>
+      {{
+        mode === 'applications'
+          ? 'A connected view of your lending pipeline.'
+          : 'Inspect the evidence. Make the next step deliberate.'
+      }}
+    </p>
+  </div>
+  <div class="heading-actions">
+    <button type="button" class="button outline small" (click)="export()">
+      <los-icon name="download" />Export CSV
+    </button>
+    @if (store.canCreate()) {
+      <a routerLink="/workspace/applications/new" class="button primary small"
+        ><los-icon name="plus" />New application</a
+      >
+    }
+  </div>
+</div>
+<div class="summary-ribbon">
+  <div>
+    <span>IN THIS VIEW</span><strong>{{ filtered().length }} applications</strong>
+  </div>
+  <div>
+    <span>REQUESTED CAPITAL</span><strong>{{ money(total()) }}</strong>
+  </div>
+  <div>
+    <span>ACCESS SCOPE</span
+    ><strong>{{
+      store.isCustomer()
+        ? 'Your applications'
+        : store.canAdmin() || store.role() === 'Auditor'
+          ? 'All demo offices'
+          : 'North Branch'
+    }}</strong>
+  </div>
+  <p>Synthetic applications.<br />No real credit decisions.</p>
+</div>
+@if (mode === 'approvals') {
+  <div class="notice">
+    <los-icon name="shield" /><span
+      >Only the Branch manager persona can approve, reject or simulate disbursement. All changes
+      remain in your browser.</span
+    >
+  </div>
+}
+<section class="panel">
+  <div class="filter-bar">
+    <label class="input-with-icon"
+      ><los-icon name="search" /><input
+        aria-label="Search applications"
+        placeholder="Search name or reference…"
+        [ngModel]="query()"
+        (ngModelChange)="updateQuery($event)" /></label
+    ><label
+      ><span class="sr-only">Filter status</span
+      ><select [ngModel]="status()" (ngModelChange)="status.set($event); page.set(1)">
+        <option>All statuses</option>
+        @for (item of statuses; track item) {
+          <option>{{ item }}</option>
+        }
+      </select></label
+    ><label
+      ><span class="sr-only">Filter product</span
+      ><select [ngModel]="product()" (ngModelChange)="product.set($event); page.set(1)">
+        <option>All products</option>
+        @for (item of products; track item) {
+          <option>{{ item }}</option>
+        }
+      </select></label
+    ><label
+      ><span class="sr-only">Sort applications</span
+      ><select [ngModel]="sort()" (ngModelChange)="sort.set($event)">
+        <option value="newest">Newest first</option>
+        <option value="amount">Highest amount</option>
+      </select></label
+    >
+  </div>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Applicant / reference</th>
+          <th>Product</th>
+          <th>Requested</th>
+          <th>Status</th>
+          <th>Score</th>
+          <th>Created</th>
+          <th><span class="sr-only">View</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (app of rows(); track app.id) {
+          <tr>
+            <td>
+              <a class="person-cell" [routerLink]="['/workspace/applications', app.id]"
+                ><span class="avatar">{{ app.initials }}</span
+                ><span
+                  >{{ app.name }}<small>{{ app.id }}</small></span
+                ></a
+              >
+            </td>
+            <td>
+              {{ app.product }}<small class="table-sub">{{ app.term }} months</small>
+            </td>
+            <td class="number-cell">{{ money(app.amount) }}</td>
+            <td>
+              <span class="status" [attr.data-status]="app.status"><i></i>{{ app.status }}</span>
+            </td>
+            <td>
+              <span class="score-chip" [class.low]="app.score < 70">{{ app.score || '—' }}</span>
+            </td>
+            <td>{{ app.created | date: 'dd MMM' }}</td>
+            <td>
+              <a
+                [routerLink]="['/workspace/applications', app.id]"
+                class="icon-button"
+                [attr.aria-label]="'View application for ' + app.name"
+                ><los-icon name="arrow"
+              /></a>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <los-icon name="search" />
+                <h3>A clear desk.</h3>
+                <p>No applications match this view. Try changing the filters.</p>
+                <button
+                  type="button"
+                  class="button outline small"
+                  (click)="query.set(''); status.set('All statuses'); product.set('All products')"
+                >
+                  Clear filters
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="table-pagination">
+    <span>{{ filtered().length }} results · Page {{ current() }} of {{ pages() }}</span>
+    <div>
+      <button
+        class="button outline small"
+        type="button"
+        [disabled]="current() <= 1"
+        (click)="page.set(current() - 1)"
+      >
+        Previous</button
+      ><button
+        class="button outline small"
+        type="button"
+        [disabled]="current() >= pages()"
+        (click)="page.set(current() + 1)"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+</section>

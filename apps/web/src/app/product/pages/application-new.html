@@ -1,0 +1,219 @@
+<!-- Copyright 2026 Kartikay Srivastava. SPDX-License-Identifier: Apache-2.0 -->
+<a class="back-link" routerLink="/workspace/applications">← All applications</a>
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">A NEW POSSIBILITY</p>
+    <h1>{{ editId ? 'Refine the picture.' : 'Let’s build the picture.' }}</h1>
+    <p>A considered application is the start of a better lending journey.</p>
+  </div>
+  <span class="soft-badge">SYNTHETIC APPLICATION</span>
+</div>
+@if (store.canCreate() && (!editId || existing?.status === 'Draft')) {
+  <div class="wizard-layout">
+    <aside class="wizard-steps">
+      @for (label of steps; track label) {
+        <div [class.active]="step() === $index" [class.complete]="step() > $index">
+          <span>
+            @if (step() > $index) {
+              <los-icon name="check" />
+            } @else {
+              0{{ $index + 1 }}
+            }
+          </span>
+          <div>
+            {{ label
+            }}<small>{{
+              ['Who is applying', 'The financial details', 'Supporting context', 'One final look'][
+                $index
+              ]
+            }}</small>
+          </div>
+        </div>
+      }
+      <div class="wizard-note">
+        <los-icon name="shield" />
+        <p>Use fictional information only. This is not an application for real credit.</p>
+      </div>
+    </aside>
+    <form class="panel wizard-form" [formGroup]="form" (ngSubmit)="save(true)">
+      <p class="eyebrow">STEP 0{{ step() + 1 }} / 04</p>
+      <h2>
+        {{
+          [
+            'Start with the applicant.',
+            'Define the opportunity.',
+            'Add supporting context.',
+            'Ready for the next step?',
+          ][step()]
+        }}
+      </h2>
+      @switch (step()) {
+        @case (0) {
+          <div class="form-grid">
+            <label class="field"
+              >Full name<input
+                formControlName="name"
+                autocomplete="off"
+                placeholder="e.g. Aditi Sharma"
+              />
+              @if (invalid('name')) {
+                <small class="form-error">Enter a name, up to 80 characters.</small>
+              }</label
+            ><label class="field"
+              >Email address<input
+                formControlName="email"
+                type="email"
+                autocomplete="off"
+                placeholder="applicant@example.com"
+              />
+              @if (invalid('email')) {
+                <small class="form-error">Enter a valid fictional email address.</small>
+              }</label
+            ><label class="field full-span"
+              >Business / purpose<input
+                formControlName="business"
+                placeholder="e.g. Studio expansion"
+              />
+              @if (invalid('business')) {
+                <small class="form-error">Add a business name or application purpose.</small>
+              }</label
+            ><label class="field full-span"
+              >Loan product<select formControlName="product">
+                @for (product of products; track product) {
+                  <option>{{ product }}</option>
+                }
+              </select></label
+            >
+          </div>
+        }
+        @case (1) {
+          <div class="form-grid">
+            <label class="field"
+              >Requested amount · INR<input
+                formControlName="amount"
+                type="number"
+                min="10000"
+                max="5000000"
+                step="1000"
+              />
+              @if (invalid('amount')) {
+                <small class="form-error">Between ₹10,000 and ₹50,00,000.</small>
+              }</label
+            ><label class="field"
+              >Term · months<input formControlName="term" type="number" min="6" max="60" />
+              @if (invalid('term')) {
+                <small class="form-error">Between 6 and 60 months.</small>
+              }</label
+            ><label class="field"
+              >Declared monthly income · INR<input formControlName="income" type="number" min="1" />
+              @if (invalid('income')) {
+                <small class="form-error">Income must be greater than zero.</small>
+              }</label
+            ><label class="field"
+              >Existing monthly obligations · INR<input
+                formControlName="obligations"
+                type="number"
+                min="0"
+              />
+              @if (invalid('obligations')) {
+                <small class="form-error">Enter zero or a positive amount.</small>
+              }
+            </label>
+          </div>
+          <div class="notice">
+            <los-icon name="wallet" /><span
+              >All figures are synthetic and in INR. The preview does not calculate a binding offer
+              or verify eligibility.</span
+            >
+          </div>
+        }
+        @case (2) {
+          <label class="upload-zone"
+            ><los-icon name="upload" /><strong>Choose supporting documents</strong
+            ><span>PDF, JPEG or PNG · up to 10 MB each · maximum 5</span
+            ><input
+              type="file"
+              multiple
+              accept="application/pdf,image/jpeg,image/png"
+              (change)="selectFiles($event)"
+            /><span class="button outline small">Choose files</span></label
+          >
+          @for (file of files(); track $index) {
+            <div class="document-row">
+              <los-icon name="file" /><span
+                >{{ file.name }}<small>{{ file.size }} bytes · metadata only</small></span
+              ><los-icon name="check" />
+            </div>
+          }
+          <p class="subtle">
+            Optional for this demo. Only file names, sizes and types are saved locally. File
+            contents are not uploaded, stored, verified or sent to AI.
+          </p>
+        }
+        @case (3) {
+          <div class="review-sheet">
+            <div>
+              <span>Applicant</span><strong>{{ form.controls.name.value }}</strong>
+            </div>
+            <div>
+              <span>Product</span><strong>{{ form.controls.product.value }}</strong>
+            </div>
+            <div>
+              <span>Requested amount</span><strong>{{ money(form.controls.amount.value) }}</strong>
+            </div>
+            <div>
+              <span>Term</span><strong>{{ form.controls.term.value }} months</strong>
+            </div>
+            <div>
+              <span>Declared income</span
+              ><strong>{{ money(form.controls.income.value) }} / month</strong>
+            </div>
+            <div>
+              <span>Attachments</span><strong>{{ files().length }} metadata records</strong>
+            </div>
+          </div>
+          <label class="checkbox-field"
+            ><input type="checkbox" formControlName="consent" /><span
+              >I understand this is a browser-only simulation using fictional information, not a
+              request for real credit.</span
+            ></label
+          >
+        }
+      }
+      @if (error()) {
+        <p class="form-error" role="alert">{{ error() }}</p>
+      }
+      <div class="wizard-actions">
+        @if (step() > 0) {
+          <button
+            type="button"
+            class="button outline"
+            (click)="step.set(step() - 1); error.set('')"
+          >
+            Back
+          </button>
+        } @else {
+          <a class="text-link" routerLink="/workspace/applications">Cancel</a>
+        }
+        <div>
+          <button type="button" class="button outline" (click)="save(false)">Save draft</button>
+          @if (step() < 3) {
+            <button type="button" class="button primary" (click)="next()">
+              Continue <los-icon name="right" />
+            </button>
+          } @else {
+            <button type="submit" class="button primary">
+              Submit demo application <los-icon name="check" />
+            </button>
+          }
+        </div>
+      </div>
+    </form>
+  </div>
+} @else {
+  <div class="empty-state panel">
+    <los-icon name="shield" />
+    <h2>This persona cannot create applications.</h2>
+    <p>Switch to Customer or Loan officer to explore intake.</p>
+  </div>
+}

@@ -1,0 +1,138 @@
+<!-- Copyright 2026 Kartikay Srivastava. SPDX-License-Identifier: Apache-2.0 -->
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">FINANDROME INTELLIGENCE</p>
+    <h1>Context is your advantage.</h1>
+    <p>Explore what source-backed assistance should feel like.</p>
+  </div>
+  <span class="soft-badge"><los-icon name="spark" /> SCRIPTED INTERACTION PREVIEW</span>
+</div>
+<div class="ai-layout">
+  <aside class="ai-tools">
+    <p class="nav-label">FIVE PERSPECTIVES</p>
+    @for (item of tools; track item.id) {
+      <button type="button" [class.active]="selected() === item.id" (click)="choose(item.id)">
+        <los-icon [name]="item.icon" /><span
+          >{{ item.name }}<small>{{ item.tag }}</small></span
+        ><los-icon name="chevron" />
+      </button>
+    }
+    <div class="ai-boundary">
+      <los-icon name="shield" />
+      <h3>Human decisions.<br />Always.</h3>
+      <p>
+        No live model, document extraction or autonomous decision-making is connected in this
+        frontend release.
+      </p>
+    </div>
+  </aside>
+  <section class="panel ai-workspace">
+    <div class="ai-workspace-head">
+      <span class="ai-symbol"><los-icon name="spark" /></span>
+      <div>
+        <strong>{{ tool().name }}</strong
+        ><small>{{ tool().description }}</small>
+      </div>
+      <span class="soft-badge push-right">DETERMINISTIC DEMO</span>
+    </div>
+    @if (selected() !== 'portfolio' && selected() !== 'policy') {
+      <label class="field ai-context"
+        >Application context<select
+          [ngModel]="applicationId()"
+          (ngModelChange)="applicationId.set($event); answer.set(null)"
+        >
+          @for (app of store.applications(); track app.id) {
+            <option [value]="app.id">{{ app.name }} · {{ app.id }}</option>
+          }
+        </select></label
+      >
+    }
+    <div class="ai-response-area" aria-live="polite">
+      @if (running()) {
+        <div class="ai-loading">
+          <span class="ai-symbol"><los-icon name="spark" /></span>
+          <h3>Preparing the scripted preview…</h3>
+          <p>No external AI request is being made.</p>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line short"></div>
+          <button type="button" class="button outline small" (click)="cancel()">
+            Cancel preview
+          </button>
+        </div>
+      } @else if (answer(); as result) {
+        <div class="ai-result">
+          <p class="eyebrow"><span class="live-dot"></span> SCRIPTED RESPONSE / NOT LIVE AI</p>
+          <h2>{{ result.title }}</h2>
+          @for (paragraph of result.paragraphs; track $index) {
+            <p>{{ paragraph }}</p>
+          }
+          @if (result.citations.length) {
+            <div class="ai-citations">
+              <span>SOURCE CONTEXT</span>
+              @for (citation of result.citations; track citation.label) {
+                <button type="button" class="citation-button" (click)="source.set(citation.detail)">
+                  <los-icon name="link" />{{ citation.label }}<los-icon name="arrow" />
+                </button>
+                @if (citation.path) {
+                  <a [routerLink]="citation.path" class="text-link">Open source view ↗</a>
+                }
+              }
+            </div>
+          }
+          @if (source()) {
+            <aside class="source-drawer">
+              <div>
+                <strong>Source details</strong
+                ><button
+                  type="button"
+                  class="icon-button"
+                  aria-label="Close source details"
+                  (click)="source.set('')"
+                >
+                  <los-icon name="close" />
+                </button>
+              </div>
+              <p>{{ source() }}</p>
+            </aside>
+          }
+        </div>
+      } @else {
+        <div class="ai-welcome">
+          <div class="intelligence-orbit"><los-icon name="spark" /></div>
+          <p class="eyebrow">LESS NOISE. MORE CONTEXT.</p>
+          <h2>Good decisions start<br />with better questions.</h2>
+          <p>
+            Choose a capability, inspect its context and explore a source-linked sample response.
+          </p>
+          <div class="ai-principles">
+            <span><los-icon name="link" />Source context</span
+            ><span><los-icon name="shield" />Scoped data</span
+            ><span><los-icon name="users" />Human review</span>
+          </div>
+        </div>
+      }
+    </div>
+    <div class="ai-composer">
+      <label class="sr-only" for="ai-question">Preview question</label
+      ><textarea
+        id="ai-question"
+        rows="2"
+        [ngModel]="prompt()"
+        (ngModelChange)="prompt.set($event)"
+        maxlength="600"
+      ></textarea
+      ><button
+        type="button"
+        class="button primary"
+        [disabled]="running() || !prompt().trim()"
+        (click)="run()"
+      >
+        Run preview <los-icon name="arrow" />
+      </button>
+    </div>
+    <p class="ai-disclaimer">
+      Sample questions produce scripted, fixture-based answers. Edited questions return an explicit
+      unsupported response. No provider, model quality or latency claim is implied.
+    </p>
+  </section>
+</div>

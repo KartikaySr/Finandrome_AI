@@ -1,0 +1,252 @@
+<!-- Copyright 2026 Kartikay Srivastava. SPDX-License-Identifier: Apache-2.0 -->
+<a class="back-link" routerLink="/workspace/applications">← All applications</a>
+@if (app(); as item) {
+  <div class="page-heading detail-heading">
+    <div class="person-cell">
+      <span class="avatar jumbo lime">{{ item.initials }}</span>
+      <div>
+        <p class="eyebrow">{{ item.id }} / {{ item.office }}</p>
+        <h1>{{ item.name }}</h1>
+        <p>{{ item.business }} · {{ item.email }}</p>
+      </div>
+    </div>
+    <span class="status" [attr.data-status]="item.status"><i></i>{{ item.status }}</span>
+  </div>
+  <div class="detail-summary">
+    <div>
+      <span>REQUESTED AMOUNT</span><strong>{{ money(item.amount) }}</strong>
+    </div>
+    <div>
+      <span>LOAN PRODUCT</span><strong>{{ item.product }}</strong>
+    </div>
+    <div>
+      <span>TERM</span><strong>{{ item.term }} months</strong>
+    </div>
+    <div>
+      <span>SUBMITTED</span><strong>{{ item.created | date: 'dd MMM yyyy' }}</strong>
+    </div>
+  </div>
+  <div class="detail-grid">
+    <section>
+      <div class="tabs" role="tablist" aria-label="Application details">
+        @for (t of tabs; track t) {
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="tab() === t"
+            [attr.tabindex]="tab() === t ? 0 : -1"
+            (keydown)="onTabKey($event, $index)"
+            [class.active]="tab() === t"
+            (click)="tab.set(t)"
+          >
+            {{ t }}
+            @if (t === 'Documents') {
+              <span>{{ documents().length }}</span>
+            }
+          </button>
+        }
+      </div>
+      @switch (tab()) {
+        @case ('Overview') {
+          <div class="panel">
+            <div class="panel-heading">
+              <h2>Financial picture</h2>
+              <los-icon name="wallet" />
+            </div>
+            <div class="data-grid">
+              <div>
+                <span>Declared monthly income</span><strong>{{ money(item.income) }}</strong>
+              </div>
+              <div>
+                <span>Monthly obligations</span><strong>{{ money(item.obligations) }}</strong>
+              </div>
+              <div>
+                <span>Employment / business</span><strong>{{ item.business }}</strong>
+              </div>
+              <div><span>Source</span><strong>Synthetic application fixture</strong></div>
+            </div>
+            <div class="notice">
+              <los-icon name="eye" /><span
+                >Declared values are illustrative. No income, identity or credit-bureau verification
+                has occurred.</span
+              >
+            </div>
+          </div>
+          <div class="panel mt">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">RECORDED CONTEXT</p>
+                <h2>Notes & next steps</h2>
+              </div>
+            </div>
+            <p class="body-copy">
+              {{
+                item.note ||
+                  'Review the application details and document checklist before progressing to the next stage.'
+              }}
+            </p>
+            <div class="steps-inline">
+              <span [class.done]="item.status !== 'Draft'">01 / Intake</span
+              ><span
+                [class.done]="
+                  ['Under review', 'Approved', 'Disbursed', 'Rejected'].includes(item.status)
+                "
+                >02 / Review</span
+              ><span [class.done]="['Approved', 'Disbursed'].includes(item.status)"
+                >03 / Decision</span
+              >
+            </div>
+          </div>
+        }
+        @case ('Documents') {
+          <div class="panel">
+            <div class="panel-heading">
+              <h2>Evidence checklist</h2>
+              <a routerLink="/workspace/documents" class="text-link"
+                >Manage documents <los-icon name="arrow"
+              /></a>
+            </div>
+            @for (doc of documents(); track doc.id) {
+              <div class="document-row">
+                <span class="file-icon"><los-icon name="file" /></span
+                ><span
+                  ><strong>{{ doc.name }}</strong
+                  ><small
+                    >{{ doc.type }} · {{ doc.size }} ·
+                    {{ doc.localOnly ? 'Local metadata only' : 'Synthetic fixture' }}</small
+                  ></span
+                ><span class="status" [attr.data-status]="doc.status">{{ doc.status }}</span>
+              </div>
+            } @empty {
+              <div class="empty-state">
+                <los-icon name="file" />
+                <h3>No document metadata yet</h3>
+                <p>Add an item in the Documents workspace.</p>
+              </div>
+            }
+            <p class="subtle">
+              Preview records contain metadata only. They are not verified documents or downloadable
+              originals.
+            </p>
+          </div>
+        }
+        @case ('Decision history') {
+          <div class="panel">
+            <div class="panel-heading">
+              <h2>Every action has context.</h2>
+              <los-icon name="clock" />
+            </div>
+            <div class="timeline">
+              @for (event of events(); track event.id) {
+                <article>
+                  <span class="timeline-dot"></span>
+                  <p>
+                    {{ event.action }}<time>{{ event.date | date: 'dd MMM, HH:mm' }}</time>
+                  </p>
+                  <strong>{{ event.actor }} · {{ event.role }}</strong
+                  ><small>{{ event.detail }}</small>
+                </article>
+              } @empty {
+                <p class="subtle">
+                  No recorded browser actions for this application. Seeded status does not imply a
+                  complete historical audit.
+                </p>
+              }
+            </div>
+          </div>
+        }
+      }
+    </section>
+    <aside class="detail-aside">
+      <section class="panel score-panel">
+        <div class="panel-heading">
+          <p class="eyebrow">ILLUSTRATIVE SCORE</p>
+          <los-icon name="shield" />
+        </div>
+        <div class="score-ring" [style.--score]="item.score + '%'">
+          <div>
+            <strong>{{ item.score || '—' }}</strong
+            ><span>OUT OF 100</span>
+          </div>
+        </div>
+        <p>Demonstration factor score</p>
+        <small>Not a credit rating or probability of default.</small>
+        <div class="factor-row">
+          <span>Income & debt inputs</span><span class="accent">Recorded</span>
+        </div>
+        <div class="factor-row"><span>Credit bureau data</span><span>Not connected</span></div>
+        <div class="factor-row"><span>Review required</span><span>Human</span></div>
+      </section>
+      <section class="panel action-panel">
+        <p class="eyebrow">NEXT MOVE</p>
+        <h3>A deliberate decision.</h3>
+        @if (item.status === 'Draft' && store.canCreate()) {
+          <a class="button outline full" [routerLink]="['/workspace/applications', item.id, 'edit']"
+            >Edit draft <los-icon name="arrow"
+          /></a>
+        }
+        @for (action of actions(); track action) {
+          <button
+            type="button"
+            class="button full"
+            [class.primary]="
+              action === 'Approved' || action === 'Under review' || action === 'Submitted'
+            "
+            [class.outline]="
+              action !== 'Approved' && action !== 'Under review' && action !== 'Submitted'
+            "
+            (click)="open(action)"
+          >
+            {{ label(action) }}<los-icon name="right" />
+          </button>
+        } @empty {
+          <p class="subtle">No transition is available for your current persona and this status.</p>
+        }
+        <a routerLink="/workspace/ai" [queryParams]="{ application: item.id }" class="text-link"
+          ><los-icon name="spark" />Explore AI preview</a
+        >
+      </section>
+    </aside>
+  </div>
+  <dialog #decisionDialog class="modal" aria-labelledby="decision-title">
+    <button
+      type="button"
+      class="icon-button modal-close"
+      aria-label="Close decision"
+      (click)="decisionDialog.close()"
+    >
+      <los-icon name="close" />
+    </button>
+    <p class="eyebrow">DEMO WORKFLOW ACTION</p>
+    <h2 id="decision-title">{{ label(next()) }}</h2>
+    <p>
+      This updates the synthetic workspace in this browser. No real approval, disbursement or money
+      movement occurs.
+    </p>
+    <label class="field"
+      >Decision reason<textarea
+        rows="4"
+        [ngModel]="reason()"
+        (ngModelChange)="reason.set($event)"
+        placeholder="Record the context for this action…"
+        maxlength="1000"
+      ></textarea>
+    </label>
+    @if (error()) {
+      <p class="form-error" role="alert">{{ error() }}</p>
+    }
+    <div class="modal-actions">
+      <button type="button" class="button outline" (click)="decisionDialog.close()">Cancel</button
+      ><button type="button" class="button primary" (click)="confirm()">
+        Confirm demo action <los-icon name="check" />
+      </button>
+    </div>
+  </dialog>
+} @else {
+  <div class="empty-state panel">
+    <los-icon name="shield" />
+    <h1>Application unavailable.</h1>
+    <p>It may not exist or may be outside this persona’s demo scope.</p>
+    <a routerLink="/workspace/applications" class="button primary">Back to applications</a>
+  </div>
+}

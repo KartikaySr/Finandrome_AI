@@ -1,0 +1,57 @@
+{
+  "name": "finandrome-web",
+  "version": "0.1.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "lint": "ng lint",
+    "format": "prettier --write \"src/app/product/**/*.{ts,html,scss}\" src/app/app.routes.ts src/styles.scss",
+    "format:check": "prettier --check \"src/app/product/**/*.{ts,html,scss}\" src/app/app.routes.ts src/styles.scss",
+    "test:e2e": "playwright test",
+    "typecheck": "ngc -p tsconfig.app.json"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true,
+    "overrides": [
+      {
+        "files": "*.html",
+        "options": {
+          "parser": "angular"
+        }
+      }
+    ]
+  },
+  "private": true,
+  "packageManager": "npm@10.9.3",
+  "dependencies": {
+    "@angular/common": "22.2.3",
+    "@angular/compiler": "22.2.3",
+    "@angular/core": "22.2.3",
+    "@angular/forms": "22.2.3",
+    "@angular/platform-browser": "22.2.3",
+    "@angular/router": "22.2.3",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/build": "22.2.2",
+    "@angular/cli": "22.2.2",
+    "@angular/compiler-cli": "22.2.3",
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.1",
+    "angular-eslint": "22.1.0",
+    "eslint": "^10.3.0",
+    "jsdom": "^27.1.0",
+    "prettier": "^3.9.5",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "8.59.2",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=22.22.3 <23 || >=24.15.0 <25"
+  }
+}

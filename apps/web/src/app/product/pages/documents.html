@@ -1,0 +1,174 @@
+<!-- Copyright 2026 Kartikay Srivastava. SPDX-License-Identifier: Apache-2.0 -->
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">DOCUMENTS & EVIDENCE</p>
+    <h1>The details matter.</h1>
+    <p>A clear checklist. Visible review states. Evidence in context.</p>
+  </div>
+  <span class="soft-badge">METADATA PREVIEW</span>
+</div>
+@if (store.canCreate() || store.canReview()) {
+  <section class="panel document-upload">
+    <div>
+      <h3>Add document metadata</h3>
+      <p>
+        Choose a file to record its name and size locally. File bytes are never uploaded or
+        analyzed.
+      </p>
+    </div>
+    <label
+      ><span class="sr-only">Document application</span
+      ><select [ngModel]="application()" (ngModelChange)="application.set($event)">
+        @for (app of store.applications(); track app.id) {
+          <option [value]="app.id">{{ app.name }} · {{ app.id }}</option>
+        }
+      </select></label
+    ><label
+      ><span class="sr-only">Document type</span
+      ><select [ngModel]="type()" (ngModelChange)="type.set($event)">
+        <option>Income statement</option>
+        <option>Bank statement</option>
+        <option>Application attachment</option>
+      </select></label
+    ><label class="button primary small file-button"
+      ><los-icon name="upload" />Choose file<input
+        type="file"
+        accept="application/pdf,image/jpeg,image/png"
+        (change)="add($event)"
+        aria-label="Choose document file"
+    /></label>
+  </section>
+}
+@if (error()) {
+  <p class="form-error notice" role="alert">{{ error() }}</p>
+}
+<section class="panel">
+  <div class="filter-bar">
+    <label class="input-with-icon"
+      ><los-icon name="search" /><input
+        aria-label="Search documents"
+        placeholder="Search documents…"
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)" /></label
+    ><label
+      ><span class="sr-only">Document review status</span
+      ><select [ngModel]="status()" (ngModelChange)="status.set($event)">
+        <option>All states</option>
+        <option>Needs review</option>
+        <option>Verified</option>
+        <option>Rejected</option>
+      </select></label
+    ><span class="push-right subtle">{{ rows().length }} records</span>
+  </div>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Document</th>
+          <th>Application</th>
+          <th>Type</th>
+          <th>Review state</th>
+          <th>Added</th>
+          <th><span class="sr-only">Inspect</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (doc of rows(); track doc.id) {
+          <tr>
+            <td>
+              <button class="person-cell unstyled" type="button" (click)="open(doc)">
+                <span class="file-icon"><los-icon name="file" /></span
+                ><span
+                  >{{ doc.name
+                  }}<small
+                    >{{ doc.size }} ·
+                    {{ doc.localOnly ? 'Local metadata' : 'Synthetic fixture' }}</small
+                  ></span
+                >
+              </button>
+            </td>
+            <td>
+              <a [routerLink]="['/workspace/applications', doc.applicationId]">{{
+                doc.applicationId
+              }}</a>
+            </td>
+            <td>{{ doc.type }}</td>
+            <td>
+              <span class="status" [attr.data-status]="doc.status"><i></i>{{ doc.status }}</span>
+            </td>
+            <td>{{ doc.date | date: 'dd MMM' }}</td>
+            <td>
+              <button
+                class="icon-button"
+                type="button"
+                [attr.aria-label]="'Inspect ' + doc.name"
+                (click)="open(doc)"
+              >
+                <los-icon name="eye" />
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <los-icon name="file" />
+                <h3>No evidence in this view.</h3>
+                <p>Change the filters or add a synthetic metadata record.</p>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+<dialog #documentDialog class="modal" aria-labelledby="document-title">
+  <button
+    type="button"
+    class="icon-button modal-close"
+    aria-label="Close document"
+    (click)="documentDialog.close()"
+  >
+    <los-icon name="close" />
+  </button>
+  @if (selected(); as doc) {
+    <p class="eyebrow">DOCUMENT METADATA</p>
+    <h2 id="document-title">{{ doc.name }}</h2>
+    <div class="document-placeholder">
+      <los-icon name="file" /><strong>No document bytes are stored.</strong>
+      <p>
+        This record previews the document workflow. An original file or verified extraction is not
+        available.
+      </p>
+    </div>
+    <div class="review-sheet">
+      <div>
+        <span>Type</span><strong>{{ doc.type }}</strong>
+      </div>
+      <div>
+        <span>Review state</span><strong>{{ doc.status }}</strong>
+      </div>
+      <div>
+        <span>Application</span
+        ><a
+          [routerLink]="['/workspace/applications', doc.applicationId]"
+          (click)="documentDialog.close()"
+          >{{ doc.applicationId }} ↗</a
+        >
+      </div>
+    </div>
+    @if (store.canReview()) {
+      <p class="subtle">
+        These controls simulate reviewer actions; they do not verify document authenticity.
+      </p>
+      <div class="modal-actions">
+        <button type="button" class="button outline" (click)="review(doc, 'Rejected')">
+          Mark rejected</button
+        ><button type="button" class="button primary" (click)="review(doc, 'Verified')">
+          Simulate verification <los-icon name="check" />
+        </button>
+      </div>
+    }
+  }
+</dialog>

@@ -1,0 +1,235 @@
+<!-- Copyright 2026 Kartikay Srivastava. SPDX-License-Identifier: Apache-2.0 -->
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">PORTFOLIO INTELLIGENCE</p>
+    <h1>The bigger picture.</h1>
+    <p>Four perspectives. Clear definitions. Context before conclusions.</p>
+  </div>
+  <button type="button" class="button outline small" (click)="export()">
+    <los-icon name="download" />Export metrics
+  </button>
+</div>
+<div class="analytics-toolbar">
+  <div class="tabs" role="tablist" aria-label="Analytics dashboards">
+    @for (t of tabs; track t) {
+      <button
+        role="tab"
+        type="button"
+        [attr.aria-selected]="tab() === t"
+        [attr.tabindex]="tab() === t ? 0 : -1"
+        (keydown)="onTabKey($event, $index)"
+        [class.active]="tab() === t"
+        (click)="tab.set(t)"
+      >
+        {{ t }}
+      </button>
+    }
+  </div>
+</div>
+<div class="filter-bar standalone">
+  <label
+    ><span class="sr-only">Analytics office</span
+    ><select [ngModel]="office()" (ngModelChange)="office.set($event)">
+      <option>All permitted offices</option>
+      @for (o of offices; track o) {
+        <option>{{ o }}</option>
+      }
+    </select></label
+  ><label
+    ><span class="sr-only">Analytics product</span
+    ><select [ngModel]="product()" (ngModelChange)="product.set($event)">
+      <option>All products</option>
+      @for (p of products; track p) {
+        <option>{{ p }}</option>
+      }
+    </select></label
+  ><span class="subtle push-right"
+    ><span class="live-dot"></span> Browser fixture · not a live warehouse</span
+  >
+</div>
+@switch (tab()) {
+  @case ('Portfolio health') {
+    <div class="stat-grid three">
+      <article class="stat-card">
+        <span>Gross loan portfolio</span><strong>{{ compactMoney(total()) }}</strong
+        ><small>Outstanding principal · INR</small>
+      </article>
+      <article class="stat-card">
+        <span>Active loan accounts</span
+        ><strong>{{ loans().length.toString().padStart(2, '0') }}</strong
+        ><small>Filtered synthetic accounts</small>
+      </article>
+      <article class="stat-card">
+        <span>PAR30</span><strong>{{ par(30) | number: '1.1-1' }}<small>%</small></strong
+        ><small>Loans ≥30 days overdue / principal</small>
+      </article>
+    </div>
+    <div class="analytics-grid">
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>Portfolio composition</h2>
+          <los-icon name="chart" />
+        </div>
+        @for (item of mix(); track item.name) {
+          <div class="horizontal-bar-row">
+            <div>
+              <span>{{ item.name }}</span
+              ><strong>{{ money(item.value) }}</strong>
+            </div>
+            <div class="bar-track"><i [style.width.%]="percent(item.value)"></i></div>
+            <small>{{ percent(item.value) | number: '1.1-1' }}% of filtered principal</small>
+          </div>
+        }
+        <p class="subtle">
+          Calculated from permitted demo loan accounts, not illustrative chart history.
+        </p>
+      </section>
+      <section class="panel insight-card">
+        <p class="eyebrow">READ THE SIGNALS</p>
+        <h2>Numbers need<br />their context.</h2>
+        <los-icon name="shield" />
+        <p>
+          PAR measures overdue principal exposure. It is not a forecast of defaults or a measure of
+          realized losses.
+        </p>
+        <div class="definition-line"><span>Currency</span><strong>INR</strong></div>
+        <div class="definition-line">
+          <span>Threshold convention</span><strong>≥30 days</strong>
+        </div>
+        <div class="definition-line">
+          <span>Data source</span><strong>Synthetic fixture</strong>
+        </div>
+      </section>
+    </div>
+  }
+  @case ('Delinquency & PAR') {
+    <div class="stat-grid three">
+      @for (day of [30, 60, 90]; track day) {
+        <article class="stat-card">
+          <span>Portfolio at risk · {{ day }}+</span
+          ><strong>{{ par(day) | number: '1.1-1' }}<small>%</small></strong
+          ><small>Principal with ≥{{ day }} overdue days</small>
+        </article>
+      }
+    </div>
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>Exposure by overdue bucket</h2>
+        <span class="soft-badge">CURRENT FIXTURE</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Bucket</th>
+              <th>Accounts</th>
+              <th>Outstanding principal</th>
+              <th>Share of portfolio</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (bucket of buckets(); track bucket.name) {
+              <tr>
+                <td>{{ bucket.name }}</td>
+                <td>{{ bucket.loans.length }}</td>
+                <td class="number-cell">{{ money(bucket.value) }}</td>
+                <td>
+                  <div class="inline-bar"><i [style.width.%]="percent(bucket.value)"></i></div>
+                  {{ percent(bucket.value) | number: '1.1-1' }}%
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+  @case ('Repayment behavior') {
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">ILLUSTRATIVE HISTORY</p>
+          <h2>Collection rhythm</h2>
+        </div>
+        <span class="soft-badge">NOT LIVE TRANSACTIONS</span>
+      </div>
+      <los-chart
+        [values]="[42, 48, 39, 65, 56, 72, 68, 82, 74, 91, 84, 96]"
+        label="Illustrative repayments recorded across twelve October fixture periods"
+        unit="repayments"
+        caption="Standalone illustrative repayment series, not reconciled to accounts"
+      />
+      <p class="subtle">
+        Real collection efficiency and on-time payment KPIs require verified Fineract transaction
+        and schedule data. This chart demonstrates the interface only.
+      </p>
+    </section>
+    <section class="panel mt">
+      <div class="panel-heading"><h2>Account context</h2></div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Loan account</th>
+              <th>Borrower</th>
+              <th>Illustrative installments recorded</th>
+              <th>Days overdue</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (loan of loans(); track loan.id) {
+              <tr>
+                <td>{{ loan.id }}</td>
+                <td>{{ loan.name }}</td>
+                <td>{{ loan.paid }} / {{ loan.term }}</td>
+                <td>{{ loan.overdue }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4">No accounts match the current filters.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+  @case ('Origination') {
+    <div class="stat-grid three">
+      <article class="stat-card">
+        <span>Submitted population</span><strong>{{ submitted() }}</strong
+        ><small>Drafts excluded · current fixture</small>
+      </article>
+      <article class="stat-card">
+        <span>Approved or disbursed</span><strong>{{ approved() }}</strong
+        ><small>Distinct applications</small>
+      </article>
+      <article class="stat-card">
+        <span>Approval share</span
+        ><strong
+          >{{ submitted() ? ((approved() / submitted()) * 100 | number: '1.1-1') : '0.0'
+          }}<small>%</small></strong
+        ><small>Pending applications remain in denominator</small>
+      </article>
+    </div>
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>Where applications stand</h2>
+        <los-icon name="file" />
+      </div>
+      <p class="subtle">
+        Latest-state distribution, not cumulative milestone conversion. Each application appears
+        once.
+      </p>
+      @for (stage of funnel(); track stage.status) {
+        <div class="funnel-row">
+          <span class="status" [attr.data-status]="stage.status">{{ stage.status }}</span>
+          <div class="bar-track">
+            <i [style.width.%]="submitted() ? (stage.count / submitted()) * 100 : 0"></i>
+          </div>
+          <strong>{{ stage.count }}</strong>
+        </div>
+      }
+    </section>
+  }
+}
