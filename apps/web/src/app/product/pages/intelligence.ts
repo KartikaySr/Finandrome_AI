@@ -69,6 +69,9 @@ export class IntelligenceComponent implements OnDestroy {
   );
   readonly prompt = signal(this.tools[0].prompt);
   readonly running = signal(false);
+  readonly outcome = signal('Normal preview');
+  readonly failure = signal('');
+  readonly feedback = signal('');
   readonly answer = signal<PreviewAnswer | null>(null);
   readonly source = signal('');
   private timer?: ReturnType<typeof setTimeout>;
@@ -78,6 +81,8 @@ export class IntelligenceComponent implements OnDestroy {
     this.prompt.set(this.tool().prompt);
     this.answer.set(null);
     this.source.set('');
+    this.failure.set('');
+    this.feedback.set('');
   }
   cancel(): void {
     if (this.timer) clearTimeout(this.timer);
@@ -87,9 +92,23 @@ export class IntelligenceComponent implements OnDestroy {
     this.cancel();
     this.answer.set(null);
     this.source.set('');
+    this.failure.set('');
+    this.feedback.set('');
     this.running.set(true);
     this.timer = setTimeout(() => {
-      this.answer.set(this.buildAnswer());
+      if (this.outcome() === 'Simulated service error')
+        this.failure.set(
+          'The demo service is unavailable. No external request was made. Retry with the normal preview.',
+        );
+      else if (this.outcome() === 'No matching evidence')
+        this.answer.set({
+          title: 'No supporting evidence found.',
+          paragraphs: [
+            'This scenario demonstrates abstention when authorized evidence is unavailable. Try a different context or return to the normal preview.',
+          ],
+          citations: [],
+        });
+      else this.answer.set(this.buildAnswer());
       this.running.set(false);
     }, 650);
   }
@@ -171,7 +190,7 @@ export class IntelligenceComponent implements OnDestroy {
           title: 'Your portfolio, in the current demo scope.',
           paragraphs: [
             `Outstanding principal is ${money(this.store.portfolio())} across ${this.store.loans().length} synthetic loan accounts visible to your persona.`,
-            `PAR30 is ${this.store.par30().toFixed(2)}%, calculated as the outstanding principal on loans at least 30 days overdue divided by total outstanding principal.`,
+            `PAR30 is ${this.store.par30().toFixed(2)}%, calculated as the outstanding principal on loans more than 30 days overdue divided by total outstanding principal.`,
             'These values are calculated from the current browser fixture. They are not a live warehouse refresh, default forecast or lending recommendation.',
           ],
           citations: [
@@ -179,7 +198,7 @@ export class IntelligenceComponent implements OnDestroy {
               label: 'Scoped portfolio fixture',
               path: '/workspace/analytics',
               detail:
-                'Current permitted synthetic loan records. Currency INR; PAR30 uses >=30 overdue days. Empty portfolios return 0% with zero accounts; this is not a statement about risk.',
+                'Current permitted synthetic loan records. Currency INR; PAR30 uses >30 overdue days. Empty portfolios return 0% with zero accounts; this is not a statement about risk.',
             },
           ],
         };

@@ -6,6 +6,7 @@ import { DatePipe } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DemoStore } from '../data/demo-store';
 import { compactMoney, money } from '../data/models';
+import { scheduleFor } from '../data/servicing';
 import { IconComponent } from '../ui/icon';
 @Component({
   selector: 'los-loans',
@@ -20,6 +21,42 @@ export class LoansComponent {
   readonly params = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
   readonly id = computed(() => this.params().get('id'));
   readonly loan = computed(() => this.store.findLoan(this.id() ?? ''));
+  readonly detailTab = signal('Schedule');
+  readonly historyRange = signal('All receipts');
+  readonly transactions = computed(() => {
+    const rows = this.schedule().filter((row) => row.status === 'Illustrative paid');
+    return this.historyRange() === 'Latest 3' ? rows.slice(-3) : rows;
+  });
+  readonly product = signal('All products');
+  readonly products = ['Business growth', 'Personal credit', 'Education', 'Equipment finance'];
+  clearFilters() {
+    this.query.set('');
+    this.status.set('All accounts');
+    this.product.set('All products');
+  }
+  exportHistory() {
+    this.store.downloadCsv(
+      'finandrome-synthetic-receipts.csv',
+      [
+        'Loan',
+        'Receipt',
+        'Date UTC',
+        'Principal INR',
+        'Illustrative charge INR',
+        'Total INR',
+        'Source',
+      ],
+      this.transactions().map((row) => [
+        this.loan()!.id,
+        'DEMO-' + this.loan()!.id + '-' + row.number,
+        row.due.toISOString().slice(0, 10),
+        row.principal,
+        row.charge,
+        row.total,
+        'Synthetic schedule-derived receipt; not a bank transaction',
+      ]),
+    );
+  }
   readonly query = signal('');
   readonly status = signal('All accounts');
   readonly rows = computed(() =>
@@ -28,6 +65,7 @@ export class LoansComponent {
       .filter(
         (loan) =>
           `${loan.name} ${loan.id}`.toLowerCase().includes(this.query().toLowerCase()) &&
+          (this.product() === 'All products' || loan.product === this.product()) &&
           (this.status() === 'All accounts' ||
             (this.status() === 'Overdue' ? loan.overdue > 0 : loan.overdue === 0)),
       ),
@@ -35,17 +73,7 @@ export class LoansComponent {
   readonly due = computed(() =>
     this.store.loans().reduce((sum, loan) => sum + loan.installment, 0),
   );
-  readonly schedule = computed(() => {
-    const loan = this.loan();
-    return loan
-      ? Array.from({ length: loan.term }, (_, i) => ({
-          number: i + 1,
-          due: new Date(Date.UTC(2026, 6 + i, 5)),
-          amount: loan.installment,
-          status: i < loan.paid ? 'Illustrative paid' : 'Scheduled',
-        }))
-      : [];
-  });
+  readonly schedule = computed(() => (this.loan() ? scheduleFor(this.loan()!) : []));
   export(): void {
     this.store.downloadCsv(
       'finandrome-loans-demo.csv',

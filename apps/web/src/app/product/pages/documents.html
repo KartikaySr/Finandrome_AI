@@ -26,6 +26,9 @@
     ><label
       ><span class="sr-only">Document type</span
       ><select [ngModel]="type()" (ngModelChange)="type.set($event)">
+        <option>Admission letter</option>
+        <option>Equipment quotation</option>
+        <option>Identity document</option>
         <option>Income statement</option>
         <option>Bank statement</option>
         <option>Application attachment</option>
@@ -58,6 +61,20 @@
         <option>Verified</option>
         <option>Rejected</option>
       </select></label
+    ><label
+      ><span class="sr-only">Filter document application</span
+      ><select [ngModel]="scope()" (ngModelChange)="scope.set($event)">
+        <option>All applications</option>
+        @for (app of store.applications(); track app.id) {
+          <option [value]="app.id">{{ app.name }} · {{ app.id }}</option>
+        }
+      </select></label
+    ><button
+      class="button outline small"
+      type="button"
+      (click)="query.set(''); status.set('All states'); scope.set('All applications')"
+    >
+      Clear filters</button
     ><span class="push-right subtle">{{ rows().length }} records</span>
   </div>
   <div class="table-scroll">
@@ -135,6 +152,28 @@
   @if (selected(); as doc) {
     <p class="eyebrow">DOCUMENT METADATA</p>
     <h2 id="document-title">{{ doc.name }}</h2>
+    @if (!doc.localOnly) {
+      <button class="button outline small" type="button" (click)="preview.set(!preview())">
+        {{ preview() ? 'Hide' : 'View' }} synthetic sample
+      </button>
+      @if (preview()) {
+        <article class="sample-document">
+          <p class="eyebrow">FICTIONAL SAMPLE · NOT AN UPLOADED FILE</p>
+          <h3>{{ doc.type }}</h3>
+          <p>Applicant: {{ store.findApplication(doc.applicationId)?.name }}</p>
+          <p>Reference: {{ doc.applicationId }}</p>
+          <hr />
+          <p>
+            This illustrative evidence card is generated from the application fixture. It contains
+            no extracted or verified document content.
+          </p>
+          <p>
+            Review checklist: confirm identity linkage, reporting period and supporting figures
+            against a real original during backend integration.
+          </p>
+        </article>
+      }
+    }
     <div class="document-placeholder">
       <los-icon name="file" /><strong>No document bytes are stored.</strong>
       <p>

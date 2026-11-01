@@ -1,9 +1,10 @@
 // Copyright 2026 Kartikay Srivastava. SPDX-License-Identifier: Apache-2.0
-import { Component, inject, signal } from '@angular/core';
+import { Component, HostListener, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DemoStore } from '../data/demo-store';
 import { PRODUCTS, Product, money } from '../data/models';
+import { productRule, validateTerms } from '../data/catalog';
 import { IconComponent } from '../ui/icon';
 @Component({
   selector: 'los-application-new',
@@ -14,7 +15,8 @@ export class ApplicationNewComponent {
   readonly store = inject(DemoStore);
   readonly router = inject(Router);
   readonly fb = inject(FormBuilder);
-  readonly editId = inject(ActivatedRoute).snapshot.paramMap.get('id');
+  readonly route = inject(ActivatedRoute);
+  readonly editId = this.route.snapshot.paramMap.get('id');
   readonly existing = this.editId ? this.store.findApplication(this.editId) : undefined;
   readonly products = PRODUCTS;
   readonly money = money;
@@ -34,7 +36,49 @@ export class ApplicationNewComponent {
     consent: [false, Validators.requiredTrue],
   });
   constructor() {
-    if (this.existing?.status === 'Draft') this.form.patchValue(this.existing);
+    if (this.existing && ['Draft', 'Referred'].includes(this.existing.status))
+      this.form.patchValue(this.existing);
+    else {
+      const profile = this.store.isCustomer() ? this.store.state().customerProfile : undefined;
+      if (profile)
+        this.form.patchValue({
+          name: profile.name,
+          email: profile.email,
+          business: profile.employment,
+        });
+      const product = this.route.snapshot.queryParamMap.get('product');
+      if (product && productRule(product)) this.form.controls.product.setValue(product as Product);
+    }
+  }
+  saved = false;
+  canLeave(): boolean {
+    return (
+      this.saved ||
+      (!this.form.dirty && !this.files().length) ||
+      window.confirm(
+        'Leave this application? Unsaved changes and selected file metadata will be lost. Save a draft to keep your details.',
+      )
+    );
+  }
+  @HostListener('window:beforeunload', ['$event'])
+  beforeUnload(event: BeforeUnloadEvent): void {
+    if (!this.saved && (this.form.dirty || this.files().length)) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
+  }
+  get rule() {
+    return productRule(this.form.controls.product.value)!;
+  }
+  get termsError() {
+    return validateTerms(
+      this.form.controls.product.value,
+      this.form.controls.amount.value,
+      this.form.controls.term.value,
+    );
+  }
+  removeFile(index: number): void {
+    this.files.update((files) => files.filter((_, i) => i !== index));
   }
   invalid(name: keyof typeof this.form.controls): boolean {
     const control = this.form.controls[name];
@@ -49,7 +93,15 @@ export class ApplicationNewComponent {
           : [];
     names.forEach((name) => this.form.controls[name].markAsTouched());
     if (names.some((name) => this.form.controls[name].invalid)) {
-      this.error.set('Please complete the highlighted fields.');
+      this.error.set(
+        this.step() === 1 && this.termsError
+          ? this.termsError
+          : 'Please complete the highlighted fields.',
+      );
+      return;
+    }
+    if (this.step() === 1 && this.termsError) {
+      this.error.set(this.termsError);
       return;
     }
     this.error.set('');
@@ -68,7 +120,11 @@ export class ApplicationNewComponent {
       this.error.set('Choose nonempty PDF, JPEG or PNG files under 10 MB.');
       return;
     }
-    this.files.set(items.slice(0, 5));
+    if (items.length > 5) {
+      this.error.set('Choose at most 5 files. No files were added.');
+      return;
+    }
+    this.files.set(items);
     this.error.set('');
   }
   save(submit: boolean): void {
@@ -85,6 +141,7 @@ export class ApplicationNewComponent {
       this.store.notify(
         submit ? 'Synthetic application submitted.' : 'Draft saved in this browser.',
       );
+      this.saved = true;
       void this.router.navigate(['/workspace/applications', id]);
     } catch (error) {
       this.error.set((error as Error).message);

@@ -183,3 +183,61 @@ describe('Finandrome synthetic workflow', () => {
     vi.restoreAllMocks();
   });
 });
+
+describe('Frontend completion contracts', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+  afterEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+  it('persists reviewer notes and rejects customer notes', () => {
+    const s = new DemoStore();
+    s.enter('Loan officer');
+    s.addNote('FIN-2026-1048', 'Check declared obligations.');
+    expect(new DemoStore().events().some((e) => e.action === 'Reviewer note')).toBe(true);
+    s.enter('Customer');
+    expect(() => s.addNote('FIN-2026-1048', 'Unauthorized note')).toThrow();
+  });
+  it('keeps notification read state separate by persona and persists it', () => {
+    const s = new DemoStore();
+    s.enter('Loan officer');
+    s.markRead(s.events().map((e) => e.id));
+    expect(s.unreadEvents()).toHaveLength(0);
+    expect(new DemoStore().unreadEvents()).toHaveLength(0);
+    s.enter('Branch manager');
+    expect(s.unreadEvents().length).toBeGreaterThan(0);
+  });
+  it('requires admin to pause a product and blocks submissions for paused products', () => {
+    const s = new DemoStore();
+    s.enter('Customer');
+    expect(() => s.setProductPaused('Business growth', true)).toThrow();
+    s.enter('Administrator');
+    s.setProductPaused('Business growth', true);
+    s.enter('Customer');
+    const input = {
+      name: 'Demo',
+      email: 'demo@example.com',
+      business: 'Studio',
+      product: 'Business growth' as Product,
+      amount: 300000,
+      term: 12,
+      income: 90000,
+      obligations: 10000,
+    };
+    expect(() => s.createApplication(input, true)).toThrow(/paused/);
+    expect(s.createApplication(input, false)).toBeTruthy();
+  });
+  it('applies PAR30 strictly above 30 days, weighting full outstanding principal', () => {
+    const s = new DemoStore();
+    s.enter('Auditor');
+    const original = s.state().loans.slice(0, 2);
+    s.state.update((state) => ({
+      ...state,
+      loans: original.map((loan, i) => ({ ...loan, outstanding: 100, overdue: i ? 31 : 30 })),
+    }));
+    expect(s.par30()).toBe(50);
+  });
+});

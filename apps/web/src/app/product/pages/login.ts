@@ -15,7 +15,7 @@ import { IconComponent } from '../ui/icon';
     <main id="main-content" class="login-card">
       <p class="eyebrow">A DIFFERENT PERSPECTIVE</p>
       <h1>Your workspace.<br /><em>Your point of view.</em></h1>
-      <p>Choose a persona to explore the lending experience.</p>
+      <p>Choose a persona, then select Explore below to open its workspace.</p>
       <div class="role-grid">
         @for (role of roles; track role) {
           <button
@@ -33,9 +33,17 @@ import { IconComponent } from '../ui/icon';
           </button>
         }
       </div>
-      <button type="button" class="button primary full" (click)="enter()">
+      <button type="button" class="button primary full" [disabled]="opening()" (click)="enter()">
         Explore as {{ selected() }} <los-icon name="right" />
       </button>
+      @if (error()) {
+        <div class="notice warning" role="alert">
+          <p>{{ error() }}</p>
+          <button type="button" class="button outline" (click)="reload()">
+            Reload latest version
+          </button>
+        </div>
+      }
       <div class="demo-explainer">
         <los-icon name="eye" /><span
           ><strong>Frontend preview, not a real account.</strong> Uses fictional data stored in this
@@ -54,8 +62,24 @@ export class LoginComponent {
   readonly router = inject(Router);
   readonly roles = ROLES;
   readonly selected = signal<Role>('Branch manager');
-  enter(): void {
+  readonly opening = signal(false);
+  readonly error = signal('');
+  reload(): void {
+    window.location.reload();
+  }
+  async enter(): Promise<void> {
+    this.opening.set(true);
+    this.error.set('');
     this.store.enter(this.selected());
-    void this.router.navigate(['/workspace/overview']);
+    try {
+      const opened = await this.router.navigate(['/workspace/overview']);
+      if (!opened) this.error.set('The workspace did not open. Try again or reload the page.');
+    } catch {
+      this.error.set(
+        'The workspace could not load. A newer build may be available, or the connection was interrupted. Reload the latest version and try again. Your saved demo records will remain.',
+      );
+    } finally {
+      this.opening.set(false);
+    }
   }
 }

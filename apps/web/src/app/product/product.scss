@@ -4468,3 +4468,264 @@ em {
 .skip-link:focus {
   transform: none;
 }
+
+// Workspace command center
+.command-trigger {
+  gap: 8px;
+  width: auto;
+  flex-shrink: 0;
+}
+.command-trigger kbd {
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.command-dialog {
+  width: min(620px, calc(100vw - 32px));
+  max-height: min(720px, calc(100dvh - 48px));
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--text);
+  overflow-y: auto;
+  box-shadow: 0 32px 100px #0008;
+  &::backdrop {
+    background: #05090dbd;
+    backdrop-filter: blur(8px);
+  }
+}
+.command-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+.command-heading h2 {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+.command-input {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+}
+.command-input input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+}
+.command-scope {
+  color: var(--muted);
+  font-size: 11px;
+  margin: 16px 0 10px;
+}
+.command-results {
+  max-height: 360px;
+  overflow-y: auto;
+}
+.command-option {
+  border-radius: 10px;
+  margin: 3px 0;
+}
+.command-option[aria-selected='true'] {
+  background: var(--surface-raised);
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+}
+.command-option button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  color: var(--text);
+  text-align: left;
+  background: transparent;
+}
+.command-option button span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.command-option small {
+  display: block;
+  color: var(--muted);
+  margin-top: 4px;
+  font-size: 11px;
+}
+.command-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--border);
+  margin-top: 18px;
+  padding-top: 14px;
+  color: var(--muted);
+  font-size: 10px;
+}
+@media (max-width: 900px) {
+  .command-trigger kbd {
+    display: none;
+  }
+}
+@media (max-width: 520px) {
+  .command-dialog {
+    padding: 16px;
+  }
+  .command-heading .eyebrow {
+    font-size: 8px;
+  }
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+.product-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.product-card h2 {
+  font-size: 30px;
+  margin-bottom: 0;
+}
+.product-card .review-sheet {
+  width: 100%;
+}
+.product-card ul {
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.product-card .button {
+  margin-top: auto;
+}
+.next-step {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+}
+.next-step p {
+  margin: 6px 0 0;
+}
+.evidence-checklist {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0;
+}
+.evidence-checklist > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg);
+  border-radius: 8px;
+}
+.sample-document {
+  padding: 24px;
+  margin: 18px 0;
+  background: #f1f3e9;
+  color: #15251c;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.sample-document .eyebrow {
+  color: #346a4c;
+}
+.inbox-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--border);
+}
+.inbox-item:last-child {
+  border-bottom: 0;
+}
+.inbox-item h3 {
+  margin: 10px 0;
+}
+.inbox-item p {
+  max-width: 65ch;
+  overflow-wrap: anywhere;
+}
+.inbox-item small {
+  color: var(--muted);
+}
+.inbox-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+.metric-definitions {
+  margin: 18px 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+.metric-definitions summary {
+  color: var(--text);
+  cursor: pointer;
+}
+.metric-definitions ul {
+  padding-left: 20px;
+}
+@media (max-width: 700px) {
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+  .inbox-item,
+  .next-step {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .inbox-actions {
+    align-items: flex-start;
+  }
+  .evidence-checklist > div {
+    flex-wrap: wrap;
+  }
+  .document-upload select {
+    max-width: 100%;
+  }
+}
+.page-content:focus {
+  outline: none;
+}
+.topbar-breadcrumb {
+  min-width: 0;
+}
+.topbar-breadcrumb strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 700px) {
+  .topbar-breadcrumb {
+    flex: 1;
+    overflow: hidden;
+  }
+  .topbar-breadcrumb strong {
+    max-width: 100%;
+  }
+  .topbar-breadcrumb .demo-badge {
+    display: none;
+  }
+  .role-switch select {
+    max-width: 110px;
+  }
+}

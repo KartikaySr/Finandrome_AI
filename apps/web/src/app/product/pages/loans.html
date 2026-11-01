@@ -26,50 +26,126 @@
         ><small>Fixture snapshot · 22 October 2026</small>
       </article>
     </div>
-    <section class="panel">
-      <div class="panel-heading">
-        <div>
-          <p class="eyebrow">REPAYMENT VISIBILITY</p>
-          <h2>Illustrative schedule</h2>
+    <div class="filter-bar">
+      <button
+        class="button small"
+        [class.primary]="detailTab() === 'Schedule'"
+        [attr.aria-pressed]="detailTab() === 'Schedule'"
+        (click)="detailTab.set('Schedule')"
+      >
+        Repayment schedule</button
+      ><button
+        class="button small"
+        [class.primary]="detailTab() === 'History'"
+        [attr.aria-pressed]="detailTab() === 'History'"
+        (click)="detailTab.set('History')"
+      >
+        Payment history
+      </button>
+    </div>
+    @if (detailTab() === 'History') {
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">SYNTHETIC RECEIPTS</p>
+            <h2>Payment history</h2>
+          </div>
+          <button class="button outline small" (click)="exportHistory()">Export receipts</button>
         </div>
-        <span class="soft-badge">NOT A FINERACT SCHEDULE</span>
-      </div>
-      <p class="subtle">
-        Demonstration installments use a simple flat 12% illustration; dates and payment states are
-        illustrative. They do not reconcile to a real bank account. Actual schedules will come from
-        Fineract.
-      </p>
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Installment</th>
-              <th>Illustrative due date</th>
-              <th>Illustrative amount</th>
-              <th>State</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of schedule(); track row.number) {
+        <p class="notice">
+          Illustrative receipts are generated from the paid installments in this fixture. Principal
+          allocations reconcile to the displayed outstanding balance. These are not bank
+          transactions.
+        </p>
+        <label class="field"
+          >Receipt range<select
+            [ngModel]="historyRange()"
+            (ngModelChange)="historyRange.set($event)"
+          >
+            <option>All receipts</option>
+            <option>Latest 3</option>
+          </select></label
+        >
+        <div class="table-scroll">
+          <table>
+            <thead>
               <tr>
-                <td>{{ row.number.toString().padStart(2, '0') }}</td>
-                <td>{{ row.due | date: 'dd MMM yyyy' : 'UTC' }}</td>
-                <td class="number-cell">{{ money(row.amount) }}</td>
-                <td>
-                  <span
-                    class="status"
-                    [attr.data-status]="
-                      row.status === 'Illustrative paid' ? 'Verified' : 'Submitted'
-                    "
-                    >{{ row.status }}</span
-                  >
-                </td>
+                <th>Receipt</th>
+                <th>Date</th>
+                <th>Principal</th>
+                <th>Flat-charge allocation</th>
+                <th>Total</th>
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </section>
+            </thead>
+            <tbody>
+              @for (row of transactions(); track row.number) {
+                <tr>
+                  <td>DEMO-{{ item.id }}-{{ row.number }}</td>
+                  <td>{{ row.due | date: 'dd MMM yyyy' : 'UTC' }}</td>
+                  <td>{{ money(row.principal) }}</td>
+                  <td>{{ money(row.charge) }}</td>
+                  <td>{{ money(row.total) }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5">
+                    <div class="empty-state">
+                      <h3>No illustrative receipts yet.</h3>
+                      <p>This simulated account has no paid installments.</p>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    } @else {
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">REPAYMENT VISIBILITY</p>
+            <h2>Illustrative schedule</h2>
+          </div>
+          <span class="soft-badge">NOT A FINERACT SCHEDULE</span>
+        </div>
+        <p class="subtle">
+          Demonstration installments use a 12% total flat charge across the full term (not an annual
+          rate); dates and payment states are illustrative. They do not reconcile to a real bank
+          account. Actual schedules will come from Fineract.
+        </p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Installment</th>
+                <th>Illustrative due date</th>
+                <th>Illustrative amount</th>
+                <th>State</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of schedule(); track row.number) {
+                <tr>
+                  <td>{{ row.number.toString().padStart(2, '0') }}</td>
+                  <td>{{ row.due | date: 'dd MMM yyyy' : 'UTC' }}</td>
+                  <td class="number-cell">{{ money(row.total) }}</td>
+                  <td>
+                    <span
+                      class="status"
+                      [attr.data-status]="
+                        row.status === 'Illustrative paid' ? 'Verified' : 'Submitted'
+                      "
+                      >{{ row.status }}</span
+                    >
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
   } @else {
     <div class="empty-state panel">
       <h2>Loan unavailable.</h2>
@@ -122,6 +198,17 @@
           <option>Overdue</option>
         </select></label
       >
+      <label
+        ><span class="sr-only">Loan product filter</span
+        ><select [ngModel]="product()" (ngModelChange)="product.set($event)">
+          <option>All products</option>
+          @for (p of products; track p) {
+            <option>{{ p }}</option>
+          }
+        </select></label
+      ><button class="button outline small" type="button" (click)="clearFilters()">
+        Clear filters
+      </button>
     </div>
     <div class="table-scroll">
       <table>

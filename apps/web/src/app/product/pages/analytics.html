@@ -43,10 +43,35 @@
         <option>{{ p }}</option>
       }
     </select></label
+  ><button
+    class="button outline small"
+    (click)="office.set('All permitted offices'); product.set('All products')"
+  >
+    Clear filters</button
   ><span class="subtle push-right"
     ><span class="live-dot"></span> Browser fixture · not a live warehouse</span
   >
 </div>
+<details class="panel metric-definitions">
+  <summary>Metric definitions & data source</summary>
+  <p>Snapshot of the current browser fixture. INR only. No live bank data.</p>
+  <ul>
+    <li>Disbursed principal: sum of original principal on visible loan accounts.</li>
+    <li>Outstanding principal: original principal less synthetic paid principal allocations.</li>
+    <li>
+      Illustrative collected: principal plus flat-charge allocations on synthetic paid installments.
+    </li>
+    <li>
+      PAR30/60/90: whole outstanding principal on accounts more than 30/60/90 days overdue divided
+      by total outstanding principal. Empty portfolios display 0% as a UI convention, not a risk
+      conclusion.
+    </li>
+    <li>
+      Decision approval rate: approved or disbursed applications divided by approved, disbursed and
+      rejected applications.
+    </li>
+  </ul>
+</details>
 @switch (tab()) {
   @case ('Portfolio health') {
     <div class="stat-grid three">
@@ -61,7 +86,21 @@
       </article>
       <article class="stat-card">
         <span>PAR30</span><strong>{{ par(30) | number: '1.1-1' }}<small>%</small></strong
-        ><small>Loans ≥30 days overdue / principal</small>
+        ><small>Loans >30 days overdue / principal</small>
+      </article>
+    </div>
+    <div class="stat-grid three">
+      <article class="stat-card">
+        <span>Original disbursed principal</span><strong>{{ compactMoney(disbursed()) }}</strong
+        ><small>Visible synthetic loans</small>
+      </article>
+      <article class="stat-card">
+        <span>Illustrative collected</span><strong>{{ compactMoney(collected()) }}</strong
+        ><small>Schedule-derived receipts</small>
+      </article>
+      <article class="stat-card">
+        <span>Overdue accounts</span><strong>{{ overdueCount() }}</strong
+        ><small>At least one overdue day</small>
       </article>
     </div>
     <div class="analytics-grid">
@@ -94,7 +133,7 @@
         </p>
         <div class="definition-line"><span>Currency</span><strong>INR</strong></div>
         <div class="definition-line">
-          <span>Threshold convention</span><strong>≥30 days</strong>
+          <span>Threshold convention</span><strong>>30 days</strong>
         </div>
         <div class="definition-line">
           <span>Data source</span><strong>Synthetic fixture</strong>
@@ -106,9 +145,9 @@
     <div class="stat-grid three">
       @for (day of [30, 60, 90]; track day) {
         <article class="stat-card">
-          <span>Portfolio at risk · {{ day }}+</span
+          <span>Portfolio at risk · >{{ day }}</span
           ><strong>{{ par(day) | number: '1.1-1' }}<small>%</small></strong
-          ><small>Principal with ≥{{ day }} overdue days</small>
+          ><small>Principal with >{{ day }} overdue days</small>
         </article>
       }
     </div>
@@ -207,9 +246,12 @@
       <article class="stat-card">
         <span>Approval share</span
         ><strong
-          >{{ submitted() ? ((approved() / submitted()) * 100 | number: '1.1-1') : '0.0'
+          >{{
+            approved() + rejected()
+              ? ((approved() / (approved() + rejected())) * 100 | number: '1.1-1')
+              : '0.0'
           }}<small>%</small></strong
-        ><small>Pending applications remain in denominator</small>
+        ><small>Approved / (approved + rejected); pending excluded</small>
       </article>
     </div>
     <section class="panel">

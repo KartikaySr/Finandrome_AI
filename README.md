@@ -21,6 +21,12 @@
 
 These counts describe implemented frontend experiences. Live AI, authenticated services and real loan servicing are integration milestones described below.
 
+## Interview-ready frontend
+
+The five-phase frontend release includes a four-product catalog, saved customer profiles, draft and referred-case editing, evidence checklists, reviewer notes, synthetic document samples, loan schedules and receipt history, notifications, and administrator product availability controls. Intelligence previews support retry and no-evidence states. A built-in walkthrough connects the same case across customer, officer, manager and portfolio views.
+
+**Verified:** 92 unit tests and 25 browser tests pass, with successful type checking, lint, formatting and production build. [Read the exact verification scope](docs/evidence/FRONTEND-COMPLETION.md).
+
 ## Who it is built for
 
 **Customers** need a clear application flow and a visible next step. **Lending teams** need review context, explicit decision stages and traceable activity. **Analysts** need understandable portfolio measures and useful exports. Finandrome's frontend demonstrates how those needs can coexist in one coherent product.
@@ -144,6 +150,9 @@ When starting from the repository root, the production files are in `apps/web/di
 
 ### A useful demo journey
 
+Open **Interview walkthrough** in the workspace for a guided six-step presentation. For a reproducible case, use ₹3,00,000 over 12 months: the simulation produces ₹28,000 installments and ₹36,000 total flat charge. See [the interview script and completion evidence](docs/evidence/FRONTEND-COMPLETION.md).
+
+
 1. Enter as **Customer** and create a fictional application through all four wizard steps.
 2. Copy its detail URL; switch to **Loan officer** and open that application again.
 3. Start review and record a reason. Optionally refer it and return as Customer to resubmit.
@@ -180,6 +189,8 @@ Inherited frontend modules remain under the existing `core`, `features`, `layout
 apps/web/src/app/product/
   data/
     models.ts                  Typed demo contracts and formatting
+    catalog.ts                 Product eligibility and intake constraints
+    servicing.ts               Reconciled synthetic schedules and balances
     seed.ts                    Deterministic fictional fixture
     demo-store.ts              Scope, mutations, persistence and exports
     demo-store.spec.ts         Workflow, isolation and recovery tests
@@ -188,6 +199,10 @@ apps/web/src/app/product/
   pages/
     landing.*                  Public product experience
     login.ts                   Six-persona entry
+    demo-guide.ts              Reproducible interview walkthrough
+    products.ts                Catalog and local availability
+    customer-profile.ts        Persistent profile and intake prefilling
+    notifications.ts           Scoped event inbox and read state
     overview.*                 Lending overview
     applications.*             Scoped list, filters and pagination
     application-new.*          Four-step intake
@@ -288,7 +303,7 @@ npm run test:e2e
 
 Browser tests use the production build and the local preview server. Build before running them. They exercise persona scope, the application-to-simulated-loan journey, refresh persistence, filtering, all analytics perspectives, all five AI scenarios, document metadata validation, preferences, exports, mobile navigation and runtime page errors.
 
-The original frontend tests are retained, and new tests verify Finandrome workflow behavior. These tests do not validate real bank integrations, real authentication, OCR, LLM accuracy, financial calculations or server-side security. Consult [the frontend verification record](docs/evidence/FRONTEND-VERIFICATION.md) for actual results and known limits.
+The original frontend tests are retained, and new tests verify Finandrome workflow behavior. These tests do not validate real bank integrations, real authentication, OCR, LLM accuracy, bank-grade financial calculations or server-side security. Consult [the frontend verification record](docs/evidence/FRONTEND-VERIFICATION.md) for actual results and known limits.
 
 Angular's persistent cache is disabled in this workspace to avoid a native LMDB crash observed on the local macOS toolchain. This does not disable compilation or type checking. Production builds remain optimized and are split into lazy feature chunks.
 

@@ -1,6 +1,6 @@
 // Copyright 2026 Kartikay Srivastava. SPDX-License-Identifier: Apache-2.0
 import { Component, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { DemoStore } from '../data/demo-store';
@@ -8,7 +8,7 @@ import { ROLES } from '../data/models';
 import { IconComponent } from '../ui/icon';
 @Component({
   selector: 'los-administration',
-  imports: [FormsModule, DatePipe, IconComponent],
+  imports: [FormsModule, DatePipe, IconComponent, RouterLink],
   templateUrl: './administration.html',
 })
 export class AdministrationComponent {

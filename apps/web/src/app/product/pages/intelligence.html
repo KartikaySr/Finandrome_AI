@@ -47,6 +47,16 @@
         </select></label
       >
     }
+    <label class="field ai-context"
+      >Demo response scenario<select
+        [ngModel]="outcome()"
+        (ngModelChange)="cancel(); outcome.set($event); answer.set(null); failure.set('')"
+      >
+        <option>Normal preview</option>
+        <option>Simulated service error</option>
+        <option>No matching evidence</option>
+      </select></label
+    >
     <div class="ai-response-area" aria-live="polite">
       @if (running()) {
         <div class="ai-loading">
@@ -57,6 +67,18 @@
           <div class="skeleton-line short"></div>
           <button type="button" class="button outline small" (click)="cancel()">
             Cancel preview
+          </button>
+        </div>
+      } @else if (failure()) {
+        <div class="empty-state" role="alert">
+          <h2>Assistance is temporarily unavailable.</h2>
+          <p>{{ failure() }}</p>
+          <button
+            type="button"
+            class="button primary"
+            (click)="outcome.set('Normal preview'); run()"
+          >
+            Retry normal preview
           </button>
         </div>
       } @else if (answer(); as result) {
@@ -78,6 +100,25 @@
                 }
               }
             </div>
+          }
+          <div class="filter-bar">
+            <span class="subtle">Was this preview useful?</span
+            ><button
+              type="button"
+              class="button outline small"
+              (click)="feedback.set('Thanks — marked useful for this session.')"
+            >
+              Useful</button
+            ><button
+              type="button"
+              class="button outline small"
+              (click)="feedback.set('Thanks — marked needs improvement for this session.')"
+            >
+              Needs improvement
+            </button>
+          </div>
+          @if (feedback()) {
+            <p role="status" class="subtle">{{ feedback() }}</p>
           }
           @if (source()) {
             <aside class="source-drawer">

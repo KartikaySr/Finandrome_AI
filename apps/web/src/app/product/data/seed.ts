@@ -1,4 +1,5 @@
 // Copyright 2026 Kartikay Srivastava. SPDX-License-Identifier: Apache-2.0
+import { installmentParts, remainingPrincipal } from './servicing';
 import { Application, DemoState, OFFICES, PRODUCTS, initials } from './models';
 
 export function seedState(): DemoState {
@@ -45,14 +46,17 @@ export function seedState(): DemoState {
     initials: initials(name),
     email: `applicant${index + 1}@example.com`,
     product: PRODUCTS[index % 4],
-    amount: [1200000, 850000, 2400000, 600000, 450000, 1800000, 950000, 325000][index % 8],
+    amount: [1200000, 850000, 2400000, 600000, 450000, 900000, 950000, 325000][index % 8],
     term: [24, 18, 36, 12][index % 4],
     income: [180000, 120000, 240000, 90000][index % 4],
     obligations: [20000, 15000, 35000, 10000][index % 4],
     office: OFFICES[index % 3],
     status: states[index],
     score: [82, 76, 91, 68, 79, 86, 88, 52][index % 8],
-    created: `2026-10-${String(22 - Math.floor(index / 2)).padStart(2, '0')}T09:00:00.000Z`,
+    created:
+      index >= 11
+        ? '2025-11-01T09:00:00.000Z'
+        : `2026-10-${String(22 - Math.floor(index / 2)).padStart(2, '0')}T09:00:00.000Z`,
     updated: `2026-10-${String(22 - Math.floor(index / 2)).padStart(2, '0')}T11:30:00.000Z`,
     owner: index === 0 || index === 11 ? 'customer-demo' : `customer-${index + 1}`,
     note: index === 3 ? 'Please clarify the declared monthly obligations.' : '',
@@ -65,13 +69,13 @@ export function seedState(): DemoState {
       name: item.name,
       product: item.product,
       principal: item.amount,
-      outstanding: Math.round(item.amount * (0.68 + index * 0.04)),
-      installment: Math.ceil((item.amount * 1.12) / item.term),
+      outstanding: remainingPrincipal(item.amount, item.term, 4 + index),
+      installment: installmentParts(item.amount, item.term, 0).total,
       term: item.term,
       paid: 4 + index,
       overdue: [0, 12, 34, 0, 65][index],
       office: item.office,
-      nextDue: '2026-11-05',
+      nextDue: ['2026-11-05', '2026-10-10', '2026-09-18', '2026-11-05', '2026-08-18'][index],
     }));
   return {
     version: 1,

@@ -11,6 +11,8 @@ import {
   Role,
   initials,
 } from './models';
+import { installmentParts, remainingPrincipal } from './servicing';
+import { validateTerms } from './catalog';
 import { seedState } from './seed';
 
 const STATE_KEY = 'finandrome.demo.v1';
@@ -63,7 +65,7 @@ export class DemoStore {
   readonly par30 = computed(() =>
     this.portfolio()
       ? (this.loans()
-          .filter((loan) => loan.overdue >= 30)
+          .filter((loan) => loan.overdue > 30)
           .reduce((sum, loan) => sum + loan.outstanding, 0) /
           this.portfolio()) *
         100
@@ -118,8 +120,8 @@ export class DemoStore {
   ): string {
     if (!this.canCreate()) throw new Error('This demo role cannot create applications.');
     const existing = existingId ? this.findApplication(existingId) : undefined;
-    if (existingId && (!existing || existing.status !== 'Draft'))
-      throw new Error('Only an available draft can be edited.');
+    if (existingId && (!existing || !['Draft', 'Referred'].includes(existing.status)))
+      throw new Error('Only an available draft or referred application can be edited.');
     if (!input.name.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email))
       throw new Error('Enter a name and valid email.');
     if (
@@ -135,6 +137,14 @@ export class DemoStore {
       throw new Error(
         'Check amount (₹10,000–₹50,00,000), term (6–60 months), income and obligations.',
       );
+    const termsError = validateTerms(input.product, input.amount, input.term);
+    if (termsError) throw new Error(termsError);
+    if (submit && this.state().pausedProducts?.includes(input.product))
+      throw new Error(
+        'This product is paused for new submissions. Save a draft or select another product.',
+      );
+    if (!input.business.trim() || input.business.length > 100 || input.name.trim().length > 80)
+      throw new Error('Enter a purpose (up to 100 characters) and name (up to 80 characters).');
     const id = existingId ?? `FIN-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
     const timestamp = new Date().toISOString();
     const app: Application = {
@@ -142,13 +152,13 @@ export class DemoStore {
       name: input.name.trim(),
       id,
       initials: initials(input.name),
-      status: submit ? 'Submitted' : 'Draft',
+      status: submit ? 'Submitted' : existing?.status === 'Referred' ? 'Referred' : 'Draft',
       score: 0,
       created: existing?.created ?? timestamp,
       updated: timestamp,
       owner: 'customer-demo',
       office: 'North Branch',
-      note: '',
+      note: existing?.note ?? '',
     };
     this.update({
       ...this.state(),
@@ -182,6 +192,12 @@ export class DemoStore {
       throw new Error(
         'This transition is not available for the current role and application state.',
       );
+    if (next === 'Submitted') {
+      const invalid = validateTerms(app.product, app.amount, app.term);
+      if (invalid) throw new Error(invalid);
+      if (this.state().pausedProducts?.includes(app.product))
+        throw new Error('This product is paused for submissions.');
+    }
     const score =
       next === 'Under review' && !app.score
         ? Math.max(35, Math.min(95, Math.round(90 - (app.obligations / app.income) * 50)))
@@ -198,12 +214,14 @@ export class DemoStore {
           product: app.product,
           principal: app.amount,
           outstanding: app.amount,
-          installment: Math.ceil((app.amount * 1.12) / app.term),
+          installment: installmentParts(app.amount, app.term, 0).total,
           term: app.term,
           paid: 0,
           overdue: 0,
           office: app.office,
-          nextDue: '2026-11-22',
+          nextDue: new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() + 1, 5))
+            .toISOString()
+            .slice(0, 10),
         },
         ...loans,
       ];
@@ -270,7 +288,64 @@ export class DemoStore {
     );
   }
 
+  readonly unreadEvents = computed(() => {
+    const read = this.state().readEvents?.[this.role() ?? 'Customer'] ?? [];
+    return this.events().filter((event) => !read.includes(event.id));
+  });
+  markRead(ids: string[]): void {
+    const role = this.role();
+    if (!role) return;
+    const allowed = new Set(this.events().map((event) => event.id));
+    const read = [
+      ...new Set([
+        ...(this.state().readEvents?.[role] ?? []),
+        ...ids.filter((id) => allowed.has(id)),
+      ]),
+    ].slice(-500);
+    this.update({ ...this.state(), readEvents: { ...this.state().readEvents, [role]: read } });
+  }
+  addNote(id: string, text: string): void {
+    if (!this.canReview() || !this.findApplication(id))
+      throw new Error('Only scoped reviewers may add a note.');
+    if (!text.trim() || text.trim().length > 1000)
+      throw new Error('Enter a note of 1–1000 characters.');
+    this.record('Reviewer note', id, text.trim());
+    this.notify('Reviewer note saved locally.');
+  }
+  saveCustomerProfile(profile: NonNullable<DemoState['customerProfile']>): void {
+    if (!this.isCustomer()) throw new Error('Switch to Customer to edit the applicant profile.');
+    if (
+      !profile.name.trim() ||
+      profile.name.length > 80 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email) ||
+      !/^[0-9+ ()-]{7,20}$/.test(profile.phone) ||
+      !profile.city.trim() ||
+      !profile.employment.trim()
+    )
+      throw new Error('Enter a valid name, email, phone, city and employment description.');
+    this.update({ ...this.state(), customerProfile: { ...profile } });
+    this.notify('Synthetic customer profile saved locally.');
+  }
+  setProductPaused(product: import('./models').Product, paused: boolean): void {
+    if (!this.canAdmin())
+      throw new Error('Only Administrator may change demo product availability.');
+    const products = new Set(this.state().pausedProducts ?? []);
+    if (paused) products.add(product);
+    else products.delete(product);
+    this.update({ ...this.state(), pausedProducts: [...products] });
+    this.record(
+      paused ? 'Product paused' : 'Product enabled',
+      'WORKSPACE',
+      product + ' · Browser configuration only.',
+    );
+  }
   savePreferences(preferences: Preferences): void {
+    if (
+      !preferences.displayName.trim() ||
+      preferences.displayName.length > 80 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(preferences.email)
+    )
+      throw new Error('Enter a valid display name and email.');
     this.update({ ...this.state(), preferences });
     this.notify('Preferences saved to this browser.');
   }
@@ -345,7 +420,14 @@ export class DemoStore {
         Array.isArray(value.events) &&
         value.preferences
       )
-        return value as DemoState;
+        return {
+          ...value,
+          loans: value.loans.map((loan: Loan) => ({
+            ...loan,
+            outstanding: remainingPrincipal(loan.principal, loan.term, loan.paid),
+            installment: installmentParts(loan.principal, loan.term, 0).total,
+          })),
+        } as DemoState;
     } catch {
       /* A corrupt browser fixture is reset; there is no server data in this demo. */
     }

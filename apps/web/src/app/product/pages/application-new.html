@@ -8,7 +8,9 @@
   </div>
   <span class="soft-badge">SYNTHETIC APPLICATION</span>
 </div>
-@if (store.canCreate() && (!editId || existing?.status === 'Draft')) {
+@if (
+  store.canCreate() && (!editId || (existing && ['Draft', 'Referred'].includes(existing.status)))
+) {
   <div class="wizard-layout">
     <aside class="wizard-steps">
       @for (label of steps; track label) {
@@ -53,6 +55,7 @@
             <label class="field"
               >Full name<input
                 formControlName="name"
+                [attr.aria-invalid]="invalid('name')"
                 autocomplete="off"
                 placeholder="e.g. Aditi Sharma"
               />
@@ -62,6 +65,7 @@
             ><label class="field"
               >Email address<input
                 formControlName="email"
+                [attr.aria-invalid]="invalid('email')"
                 type="email"
                 autocomplete="off"
                 placeholder="applicant@example.com"
@@ -72,6 +76,7 @@
             ><label class="field full-span"
               >Business / purpose<input
                 formControlName="business"
+                [attr.aria-invalid]="invalid('business')"
                 placeholder="e.g. Studio expansion"
               />
               @if (invalid('business')) {
@@ -91,27 +96,44 @@
             <label class="field"
               >Requested amount · INR<input
                 formControlName="amount"
+                [attr.aria-invalid]="invalid('amount')"
                 type="number"
-                min="10000"
-                max="5000000"
+                [min]="rule.min"
+                [max]="rule.max"
                 step="1000"
               />
               @if (invalid('amount')) {
-                <small class="form-error">Between ₹10,000 and ₹50,00,000.</small>
+                <small class="form-error"
+                  >{{ money(rule.min) }}–{{ money(rule.max) }} for this product.</small
+                >
               }</label
             ><label class="field"
-              >Term · months<input formControlName="term" type="number" min="6" max="60" />
+              >Term · months<input
+                formControlName="term"
+                [attr.aria-invalid]="invalid('term')"
+                type="number"
+                [min]="rule.minTerm"
+                [max]="rule.maxTerm"
+              />
               @if (invalid('term')) {
-                <small class="form-error">Between 6 and 60 months.</small>
+                <small class="form-error"
+                  >{{ rule.minTerm }}–{{ rule.maxTerm }} whole months.</small
+                >
               }</label
             ><label class="field"
-              >Declared monthly income · INR<input formControlName="income" type="number" min="1" />
+              >Declared monthly income · INR<input
+                formControlName="income"
+                [attr.aria-invalid]="invalid('income')"
+                type="number"
+                min="1"
+              />
               @if (invalid('income')) {
                 <small class="form-error">Income must be greater than zero.</small>
               }</label
             ><label class="field"
               >Existing monthly obligations · INR<input
                 formControlName="obligations"
+                [attr.aria-invalid]="invalid('obligations')"
                 type="number"
                 min="0"
               />
@@ -120,6 +142,12 @@
               }
             </label>
           </div>
+          <p class="notice">
+            {{ rule.name }} · {{ money(rule.min) }}–{{ money(rule.max) }} · {{ rule.minTerm }}–{{
+              rule.maxTerm
+            }}
+            months
+          </p>
           <div class="notice">
             <los-icon name="wallet" /><span
               >All figures are synthetic and in INR. The preview does not calculate a binding offer
@@ -142,7 +170,14 @@
             <div class="document-row">
               <los-icon name="file" /><span
                 >{{ file.name }}<small>{{ file.size }} bytes · metadata only</small></span
-              ><los-icon name="check" />
+              ><button
+                class="icon-button"
+                type="button"
+                [attr.aria-label]="'Remove ' + file.name"
+                (click)="removeFile($index)"
+              >
+                <los-icon name="close" />
+              </button>
             </div>
           }
           <p class="subtle">
@@ -154,6 +189,16 @@
           <div class="review-sheet">
             <div>
               <span>Applicant</span><strong>{{ form.controls.name.value }}</strong>
+            </div>
+            <div>
+              <span>Email</span><strong>{{ form.controls.email.value }}</strong>
+            </div>
+            <div>
+              <span>Purpose</span><strong>{{ form.controls.business.value }}</strong>
+            </div>
+            <div>
+              <span>Monthly obligations</span
+              ><strong>{{ money(form.controls.obligations.value) }}</strong>
             </div>
             <div>
               <span>Product</span><strong>{{ form.controls.product.value }}</strong>

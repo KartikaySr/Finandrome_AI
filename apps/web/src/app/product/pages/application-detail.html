@@ -12,6 +12,20 @@
     </div>
     <span class="status" [attr.data-status]="item.status"><i></i>{{ item.status }}</span>
   </div>
+  <section class="notice next-step">
+    <div>
+      <strong>Next step</strong>
+      <p>{{ nextStep() }}</p>
+      @if (item.status === 'Referred') {
+        <p>Referral reason: {{ item.note }}</p>
+      }
+    </div>
+    @if (linkedLoan(); as loan) {
+      <a class="button outline small" [routerLink]="['/workspace/loans', loan.id]"
+        >Open loan account</a
+      >
+    }
+  </section>
   <div class="detail-summary">
     <div>
       <span>REQUESTED AMOUNT</span><strong>{{ money(item.amount) }}</strong>
@@ -23,7 +37,7 @@
       <span>TERM</span><strong>{{ item.term }} months</strong>
     </div>
     <div>
-      <span>SUBMITTED</span><strong>{{ item.created | date: 'dd MMM yyyy' }}</strong>
+      <span>CREATED</span><strong>{{ item.created | date: 'dd MMM yyyy' }}</strong>
     </div>
   </div>
   <div class="detail-grid">
@@ -102,10 +116,27 @@
           <div class="panel">
             <div class="panel-heading">
               <h2>Evidence checklist</h2>
-              <a routerLink="/workspace/documents" class="text-link"
+              <a
+                routerLink="/workspace/documents"
+                [queryParams]="{ application: item.id }"
+                class="text-link"
                 >Manage documents <los-icon name="arrow"
               /></a>
             </div>
+            <div class="evidence-checklist">
+              @for (check of checklist(); track check.type) {
+                <div>
+                  <span>{{ check.type }}</span
+                  ><strong>{{
+                    check.verified ? 'Demo reviewed' : check.present ? 'Needs review' : 'Missing'
+                  }}</strong>
+                </div>
+              }
+            </div>
+            <p class="subtle">
+              Suggested evidence for this product; attachments remain optional in the synthetic
+              demo.
+            </p>
             @for (doc of documents(); track doc.id) {
               <div class="document-row">
                 <span class="file-icon"><los-icon name="file" /></span
@@ -129,6 +160,39 @@
               originals.
             </p>
           </div>
+        }
+        @case ('Review notes') {
+          <section class="panel">
+            <h2>Reviewer conversation</h2>
+            <p class="subtle">
+              Case notes visible to everyone with access to this demo application. Do not enter
+              confidential information.
+            </p>
+            @if (store.canReview()) {
+              <label class="field"
+                >Reviewer note<textarea
+                  rows="3"
+                  maxlength="1000"
+                  [ngModel]="noteText()"
+                  (ngModelChange)="noteText.set($event)"
+                ></textarea></label
+              ><button class="button primary" type="button" (click)="saveNote()">Save note</button>
+            }
+            @if (noteError()) {
+              <p class="form-error" role="alert">{{ noteError() }}</p>
+            }
+            <div class="timeline">
+              @for (note of notes(); track note.id) {
+                <article>
+                  <strong>{{ note.actor }} · {{ note.role }}</strong>
+                  <p>{{ note.detail }}</p>
+                  <small>{{ note.date | date: 'dd MMM yyyy, HH:mm' }}</small>
+                </article>
+              } @empty {
+                <p class="empty-state">No reviewer notes yet.</p>
+              }
+            </div>
+          </section>
         }
         @case ('Decision history') {
           <div class="panel">
@@ -180,9 +244,10 @@
       <section class="panel action-panel">
         <p class="eyebrow">NEXT MOVE</p>
         <h3>A deliberate decision.</h3>
-        @if (item.status === 'Draft' && store.canCreate()) {
+        @if (['Draft', 'Referred'].includes(item.status) && store.canCreate()) {
           <a class="button outline full" [routerLink]="['/workspace/applications', item.id, 'edit']"
-            >Edit draft <los-icon name="arrow"
+            >{{ item.status === 'Referred' ? 'Update referred application' : 'Edit draft' }}
+            <los-icon name="arrow"
           /></a>
         }
         @for (action of actions(); track action) {
@@ -202,9 +267,11 @@
         } @empty {
           <p class="subtle">No transition is available for your current persona and this status.</p>
         }
-        <a routerLink="/workspace/ai" [queryParams]="{ application: item.id }" class="text-link"
-          ><los-icon name="spark" />Explore AI preview</a
-        >
+        @if (!store.isCustomer()) {
+          <a routerLink="/workspace/ai" [queryParams]="{ application: item.id }" class="text-link"
+            ><los-icon name="spark" />Explore AI preview</a
+          >
+        }
       </section>
     </aside>
   </div>

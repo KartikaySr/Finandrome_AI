@@ -71,6 +71,15 @@ export interface DemoState {
   documents: DocumentRecord[];
   events: AuditEvent[];
   preferences: Preferences;
+  customerProfile?: {
+    name: string;
+    email: string;
+    phone: string;
+    city: string;
+    employment: string;
+  };
+  readEvents?: Partial<Record<Role, string[]>>;
+  pausedProducts?: Product[];
 }
 export const ROLES: Role[] = [
   'Branch manager',
@@ -100,7 +109,7 @@ export const money = (value: number) =>
   new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(value);
 export const compactMoney = (value: number) =>
   value >= 10000000

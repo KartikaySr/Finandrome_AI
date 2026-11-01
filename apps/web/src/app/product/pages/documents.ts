@@ -2,7 +2,7 @@
 import { Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DemoStore } from '../data/demo-store';
 import { DocumentRecord } from '../data/models';
 import { IconComponent } from '../ui/icon';
@@ -13,11 +13,17 @@ import { IconComponent } from '../ui/icon';
 })
 export class DocumentsComponent {
   readonly store = inject(DemoStore);
+  readonly scope = signal(
+    inject(ActivatedRoute).snapshot.queryParamMap.get('application') ?? 'All applications',
+  );
+  readonly preview = signal(false);
   readonly query = signal('');
   readonly status = signal('All states');
   readonly error = signal('');
   readonly selected = signal<DocumentRecord | null>(null);
-  readonly application = signal(this.store.applications()[0]?.id ?? '');
+  readonly application = signal(
+    this.store.findApplication(this.scope())?.id ?? this.store.applications()[0]?.id ?? '',
+  );
   readonly type = signal('Income statement');
   readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('documentDialog');
   readonly rows = computed(() =>
@@ -28,10 +34,12 @@ export class DocumentsComponent {
           `${doc.name} ${doc.applicationId} ${doc.type}`
             .toLowerCase()
             .includes(this.query().toLowerCase()) &&
-          (this.status() === 'All states' || doc.status === this.status()),
+          (this.status() === 'All states' || doc.status === this.status()) &&
+          (this.scope() === 'All applications' || doc.applicationId === this.scope()),
       ),
   );
   open(doc: DocumentRecord): void {
+    this.preview.set(false);
     this.selected.set(doc);
     this.dialog()?.nativeElement.showModal();
   }

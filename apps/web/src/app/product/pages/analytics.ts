@@ -1,4 +1,5 @@
 // Copyright 2026 Kartikay Srivastava. SPDX-License-Identifier: Apache-2.0
+import { scheduleFor } from '../data/servicing';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
@@ -41,6 +42,21 @@ export class AnalyticsComponent {
       ),
   );
   readonly total = computed(() => this.loans().reduce((sum, loan) => sum + loan.outstanding, 0));
+  readonly disbursed = computed(() => this.loans().reduce((sum, loan) => sum + loan.principal, 0));
+  readonly collected = computed(() =>
+    this.loans().reduce(
+      (sum, loan) =>
+        sum +
+        scheduleFor(loan)
+          .filter((row) => row.number <= loan.paid)
+          .reduce((total, row) => total + row.total, 0),
+      0,
+    ),
+  );
+  readonly overdueCount = computed(() => this.loans().filter((loan) => loan.overdue > 0).length);
+  readonly rejected = computed(
+    () => this.applications().filter((app) => app.status === 'Rejected').length,
+  );
   readonly submitted = computed(
     () => this.applications().filter((app) => app.status !== 'Draft').length,
   );
@@ -59,10 +75,10 @@ export class AnalyticsComponent {
   readonly buckets = computed(() =>
     [
       { name: 'Current / 0 days', min: 0, max: 0 },
-      { name: 'Watch / 1–29 days', min: 1, max: 29 },
-      { name: '30–59 days', min: 30, max: 59 },
-      { name: '60–89 days', min: 60, max: 89 },
-      { name: '90+ days', min: 90, max: 9999 },
+      { name: 'Watch / 1–30 days', min: 1, max: 30 },
+      { name: '31–60 days', min: 31, max: 60 },
+      { name: '61–90 days', min: 61, max: 90 },
+      { name: '91+ days', min: 91, max: Number.POSITIVE_INFINITY },
     ]
       .map((bucket) => ({
         ...bucket,
@@ -86,7 +102,7 @@ export class AnalyticsComponent {
   par(days: number): number {
     return this.total()
       ? (this.loans()
-          .filter((loan) => loan.overdue >= days)
+          .filter((loan) => loan.overdue > days)
           .reduce((sum, loan) => sum + loan.outstanding, 0) /
           this.total()) *
           100
@@ -100,6 +116,10 @@ export class AnalyticsComponent {
       'finandrome-analytics-demo.csv',
       ['Metric', 'Value', 'Units', 'Source'],
       [
+        ['Applications', this.applications().length, 'applications', 'Synthetic fixture'],
+        ['Original disbursed principal', this.disbursed(), 'INR', 'Synthetic fixture'],
+        ['Illustrative collected', this.collected(), 'INR', 'Schedule-derived synthetic receipts'],
+        ['Overdue accounts', this.overdueCount(), 'accounts', 'Synthetic fixture'],
         ['Outstanding principal', this.total(), 'INR', 'Synthetic fixture'],
         ['Active loans', this.loans().length, 'accounts', 'Synthetic fixture'],
         ['PAR30', this.par(30).toFixed(2), '%', 'Synthetic fixture'],

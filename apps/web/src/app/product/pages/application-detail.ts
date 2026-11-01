@@ -6,6 +6,7 @@ import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DemoStore } from '../data/demo-store';
 import { ApplicationStatus, money } from '../data/models';
+import { productRule } from '../data/catalog';
 import { IconComponent } from '../ui/icon';
 import { tabKey } from '../ui/tab-keyboard';
 @Component({
@@ -25,8 +26,44 @@ export class ApplicationDetailComponent {
   readonly events = computed(() =>
     this.store.events().filter((event) => event.entity === this.app()?.id),
   );
+  readonly noteText = signal('');
+  readonly noteError = signal('');
+  readonly notes = computed(() =>
+    this.events().filter((event) => event.action === 'Reviewer note'),
+  );
+  readonly checklist = computed(() =>
+    (productRule(this.app()?.product ?? '')?.evidence ?? []).map((type) => ({
+      type,
+      present: this.documents().some((doc) => doc.type === type),
+      verified: this.documents().some((doc) => doc.type === type && doc.status === 'Verified'),
+    })),
+  );
+  readonly linkedLoan = computed(() =>
+    this.store.loans().find((loan) => loan.applicationId === this.app()?.id),
+  );
+  readonly nextStep = computed(
+    () =>
+      ({
+        Draft: 'Complete your details and submit for review.',
+        Submitted: 'Your application is waiting for a loan officer.',
+        'Under review': 'A reviewer is evaluating the declared details and evidence.',
+        Referred: 'Read the referral reason, update your application and resubmit.',
+        Approved: 'Approved in the demo. A branch manager may simulate disbursement.',
+        Rejected: 'Review the recorded decision reason below.',
+        Disbursed: 'Your simulated loan account is ready to explore.',
+      })[this.app()?.status ?? 'Draft'],
+  );
+  saveNote(): void {
+    try {
+      this.store.addNote(this.app()!.id, this.noteText());
+      this.noteText.set('');
+      this.noteError.set('');
+    } catch (e) {
+      this.noteError.set((e as Error).message);
+    }
+  }
   readonly tab = signal('Overview');
-  readonly tabs = ['Overview', 'Documents', 'Decision history'];
+  readonly tabs = ['Overview', 'Documents', 'Review notes', 'Decision history'];
   readonly next = signal<ApplicationStatus>('Under review');
   readonly reason = signal('');
   readonly error = signal('');

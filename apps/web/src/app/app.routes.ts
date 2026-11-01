@@ -17,7 +17,13 @@
  * under the License.
  */
 import { inject } from '@angular/core';
-import { CanActivateChildFn, CanActivateFn, Router, Routes } from '@angular/router';
+import {
+  CanActivateChildFn,
+  CanActivateFn,
+  CanDeactivateFn,
+  Router,
+  Routes,
+} from '@angular/router';
 import { DemoStore } from './product/data/demo-store';
 
 const sessionGuard: CanActivateFn = () =>
@@ -30,6 +36,8 @@ const personaGuard: CanActivateChildFn = (route) => {
     ? true
     : inject(Router).createUrlTree(['/workspace/overview']);
 };
+const unsavedGuard: CanDeactivateFn<{ canLeave: () => boolean }> = (component) =>
+  component.canLeave();
 const staff = ['Branch manager', 'Loan officer', 'Credit reviewer', 'Auditor', 'Administrator'];
 export const routes: Routes = [
   {
@@ -54,6 +62,29 @@ export const routes: Routes = [
     canActivateChild: [personaGuard],
     loadComponent: () => import('./product/layout/shell').then((m) => m.ShellComponent),
     children: [
+      {
+        path: 'demo-guide',
+        title: 'Interview walkthrough — Finandrome',
+        loadComponent: () => import('./product/pages/demo-guide').then((m) => m.DemoGuideComponent),
+      },
+      {
+        path: 'products',
+        title: 'Products — Finandrome',
+        loadComponent: () => import('./product/pages/products').then((m) => m.ProductsComponent),
+      },
+      {
+        path: 'customer-profile',
+        title: 'Customer profile — Finandrome',
+        data: { roles: ['Customer'] },
+        loadComponent: () =>
+          import('./product/pages/customer-profile').then((m) => m.CustomerProfileComponent),
+      },
+      {
+        path: 'notifications',
+        title: 'Notifications — Finandrome',
+        loadComponent: () =>
+          import('./product/pages/notifications').then((m) => m.NotificationsComponent),
+      },
       { path: '', pathMatch: 'full', redirectTo: 'overview' },
       {
         path: 'overview',
@@ -62,6 +93,7 @@ export const routes: Routes = [
       },
       {
         path: 'applications/new',
+        canDeactivate: [unsavedGuard],
         title: 'New application — Finandrome',
         data: { roles: ['Customer', 'Loan officer'] },
         loadComponent: () =>
@@ -69,6 +101,7 @@ export const routes: Routes = [
       },
       {
         path: 'applications/:id/edit',
+        canDeactivate: [unsavedGuard],
         title: 'Edit draft — Finandrome',
         data: { roles: ['Customer', 'Loan officer'] },
         loadComponent: () =>

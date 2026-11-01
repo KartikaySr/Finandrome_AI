@@ -50,7 +50,7 @@
       ><a routerLink="/open-source"
         ><los-icon name="globe" />Open foundations <los-icon name="arrow" /></a
       ><button type="button" class="profile-button" (click)="logout()">
-        <span class="avatar lime">KS</span
+        <span class="avatar lime">{{ initials(store.state().preferences.displayName) }}</span
         ><span
           >{{ store.state().preferences.displayName }}<small>{{ store.role() }}</small></span
         ><los-icon name="logout" />
@@ -68,7 +68,9 @@
         <los-icon name="menu" />
       </button>
       <div class="topbar-breadcrumb">
-        <span>Workspace</span><los-icon name="chevron" /><strong>Finandrome</strong
+        <span>Workspace</span><los-icon name="chevron" /><strong aria-live="polite">{{
+          currentPage()
+        }}</strong
         ><span class="demo-badge">DEMO</span>
       </div>
       <div class="global-search">
@@ -93,6 +95,15 @@
           </div>
         }
       </div>
+      <button
+        type="button"
+        class="command-trigger icon-button"
+        aria-label="Open command menu"
+        aria-keyshortcuts="Control+k Meta+k"
+        (click)="openCommands()"
+      >
+        <los-icon name="search" /><kbd>⌘ / Ctrl K</kbd>
+      </button>
       <label class="role-switch"
         ><span class="sr-only">Demo persona</span
         ><select [ngModel]="store.role()" (ngModelChange)="switchRole($event)">
@@ -109,11 +120,17 @@
           [attr.aria-expanded]="notifications()"
           (click)="notifications.set(!notifications())"
         >
-          <los-icon name="bell" /><span class="notification-dot"></span>
+          <los-icon name="bell" />
+          @if (store.state().preferences.notifications && store.unreadEvents().length) {
+            <span class="notification-dot"></span>
+          }
         </button>
         @if (notifications()) {
           <section class="notification-panel">
             <h3>Recent activity</h3>
+            <a routerLink="/workspace/notifications" (click)="notifications.set(false)"
+              >Open notification center ↗</a
+            >
             @for (
               event of store.state().preferences.notifications ? store.events().slice(0, 3) : [];
               track event.id
@@ -131,14 +148,23 @@
                 }}
               </p>
             }
-            <a routerLink="/workspace/audit" (click)="notifications.set(false)"
-              >View activity log ↗</a
-            >
+            @if (!store.isCustomer()) {
+              <a routerLink="/workspace/audit" (click)="notifications.set(false)"
+                >View activity log ↗</a
+              >
+            } @else {
+              <a routerLink="/workspace/applications" (click)="notifications.set(false)"
+                >View your applications ↗</a
+              >
+            }
           </section>
         }
       </div>
-      <a class="avatar topbar-avatar" routerLink="/workspace/profile" aria-label="Open your profile"
-        >KS</a
+      <a
+        class="avatar topbar-avatar"
+        routerLink="/workspace/profile"
+        aria-label="Open your profile"
+        >{{ initials(store.state().preferences.displayName) }}</a
       >
     </header>
     <div class="preview-strip">
@@ -151,7 +177,7 @@
         Browser storage is unavailable. Changes may be lost after refresh.
       </p>
     }
-    <main class="page-content" id="main-content"><router-outlet /></main>
+    <main class="page-content" id="main-content" tabindex="-1"><router-outlet /></main>
     <footer class="workspace-footer">
       <span>FINANDROME / A CLEARER PERSPECTIVE</span
       ><span>All values in INR · Synthetic sandbox</span
@@ -177,3 +203,63 @@
     </div>
   }
 </div>
+
+<dialog #commandDialog class="command-dialog" aria-labelledby="command-title">
+  <div class="command-heading">
+    <div>
+      <p class="eyebrow">YOUR WORKSPACE, ONE SHORTCUT AWAY</p>
+      <h2 id="command-title">Go anywhere.</h2>
+    </div>
+    <button
+      type="button"
+      class="icon-button"
+      aria-label="Close command menu"
+      (click)="closeCommands()"
+    >
+      <los-icon name="close" />
+    </button>
+  </div>
+  <label class="command-input"
+    ><los-icon name="search" />
+    <input
+      #commandInput
+      role="combobox"
+      aria-label="Search pages and records"
+      aria-autocomplete="list"
+      aria-expanded="true"
+      aria-controls="command-results"
+      [attr.aria-activedescendant]="commands().length ? 'command-option-' + commandIndex() : null"
+      placeholder="Pages, applicants or loan references…"
+      [ngModel]="commandQuery()"
+      (ngModelChange)="searchCommands($event)"
+      (keydown)="commandKey($event)"
+    />
+  </label>
+  <p class="command-scope">{{ store.role() }} · Results limited to your demo scope</p>
+  <div id="command-results" role="listbox" aria-label="Workspace results" class="command-results">
+    @for (command of commands(); track command.path; let i = $index) {
+      <div
+        role="option"
+        [id]="'command-option-' + i"
+        [attr.aria-selected]="commandIndex() === i"
+        class="command-option"
+      >
+        <button type="button" tabindex="-1" (click)="goToCommand(command.path)">
+          <los-icon [name]="command.icon" /><span
+            >{{ command.label }}<small>{{ command.detail }}</small></span
+          ><los-icon name="arrow" />
+        </button>
+      </div>
+    }
+  </div>
+  @if (!commands().length) {
+    <div class="empty-state" role="status">
+      <h3>No matching pages or records.</h3>
+      <p>Try a name, application reference, or “loans”.</p>
+    </div>
+  }
+  <footer class="command-footer">
+    <span>↑ ↓ to move · Enter to open · Esc to close</span
+    ><span>{{ commands().length }} results</span>
+  </footer>
+</dialog>

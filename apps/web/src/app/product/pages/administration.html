@@ -74,7 +74,10 @@
       </div>
       <span class="soft-badge">DEMO ROLE CATALOG</span>
     </div>
-    <section class="panel">
+    <a routerLink="/workspace/products" class="button outline"
+      >Configure demo product availability</a
+    >
+    <section class="panel mt">
       <div class="table-scroll">
         <table>
           <thead>
@@ -141,6 +144,12 @@
       </div>
       <span class="soft-badge">LOCAL PREFERENCES</span>
     </div>
+    @if (store.isCustomer()) {
+      <p class="notice">
+        Looking for applicant details?
+        <a class="text-link" routerLink="/workspace/customer-profile">Open customer profile ↗</a>
+      </p>
+    }
     <div class="settings-grid">
       <form class="panel" (ngSubmit)="save()">
         <div class="panel-heading">
@@ -216,7 +225,7 @@
             <span>AI provider</span><span class="status" data-status="Draft">Not connected</span>
           </div>
           <div class="connection-row"><span>Data store</span><strong>This browser</strong></div>
-          <p class="subtle">Finandrome frontend · v0.1.0</p>
+          <p class="subtle">Finandrome frontend · v0.2.0</p>
         </section>
         <section class="panel mt reset-panel">
           <h3>A fresh perspective.</h3>
