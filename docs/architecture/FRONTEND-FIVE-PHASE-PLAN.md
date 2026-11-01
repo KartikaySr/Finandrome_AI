@@ -75,4 +75,4 @@ All five phases are implemented for the browser-local frontend simulation descri
 4. **Servicing and analytics:** linked simulated loans, reconciled schedules and synthetic receipts, exports, metric definitions and consistent PAR thresholds.
 5. **Release demonstration:** notification read states, administrator product availability, six-step interview guide and automated regression coverage.
 
-Verification: production build, type check, lint and formatting passed; 92 unit tests and 25 Playwright tests passed, including desktop/mobile captures. See [completion evidence](../evidence/FRONTEND-COMPLETION.md) for the measured boundary and remaining integration work. Automated keyboard and responsive checks do not constitute a formal WCAG audit.
+Verification: production build, type check, lint and formatting passed; 92 unit tests and 26 Playwright tests passed, including desktop/mobile captures. See [completion evidence](../evidence/FRONTEND-COMPLETION.md) for the measured boundary and remaining integration work. Automated keyboard and responsive checks do not constitute a formal WCAG audit.

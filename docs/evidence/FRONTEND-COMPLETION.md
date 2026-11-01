@@ -24,8 +24,8 @@ A functional Angular frontend with synthetic data and browser-local persistence.
 - ESLint: passed.
 - Prettier product/routes check: passed.
 - Unit tests: **92 passed across 11 files**.
-- Production build: passed; initial bundle approximately 376.06 kB raw / 95.82 kB estimated transfer.
-- Playwright: **25 passed**, including the optional desktop/mobile capture test.
+- Production build: passed; initial bundle approximately 376.06 kB raw / 95.78 kB estimated transfer.
+- Playwright: **26 passed**, including the optional desktop/mobile capture test.
 - Browser coverage includes customer submission through officer review, manager approval and simulated loan creation; scoped access, refresh, drafts, referral/resubmission, document validation, AI error recovery, exports, notifications, catalog administration and 390px mobile layouts.
 - Two existing inactive upstream component styles exceed their warning budgets; the production build succeeds. No new dependency or backend changes were required.
 
@@ -53,3 +53,7 @@ PAR30 means outstanding principal on accounts **more than 30 days overdue**, div
 Persona guards are demo UX, not a security boundary. Data is editable localStorage; activity is capped at 250 events. File selection stores metadata only, and synthetic previews are not uploaded-file contents. AI output is scripted; feedback lasts for the current view. Payment history is synthetic and there is no payment-posting integration. Historical chart series are labeled illustrations.
 
 Real authentication, durable APIs/audit, private file storage, OCR, live models, Fineract servicing, real payments and production operations remain backend integration work. These tests validate simulation arithmetic and interactions, not bank-grade finance, AI accuracy or server authorization. No production deployment or formal accessibility certification is claimed by this evidence.
+
+## Login recovery regression
+
+An open tab retained a reference to a removed lazy JavaScript chunk after a rebuild. Refreshing restored Branch manager access, verified in the user-facing browser. Login now displays a clear failure message and a Reload latest version action rather than leaving an unhandled navigation failure. A browser test aborts the workspace download, verifies the error, restores the connection, reloads and successfully enters as Branch manager. All 26 browser tests pass after this fix.

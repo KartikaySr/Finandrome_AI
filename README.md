@@ -25,7 +25,7 @@ These counts describe implemented frontend experiences. Live AI, authenticated s
 
 The five-phase frontend release includes a four-product catalog, saved customer profiles, draft and referred-case editing, evidence checklists, reviewer notes, synthetic document samples, loan schedules and receipt history, notifications, and administrator product availability controls. Intelligence previews support retry and no-evidence states. A built-in walkthrough connects the same case across customer, officer, manager and portfolio views.
 
-**Verified:** 92 unit tests and 25 browser tests pass, with successful type checking, lint, formatting and production build. [Read the exact verification scope](docs/evidence/FRONTEND-COMPLETION.md).
+**Verified:** 92 unit tests and 26 browser tests pass, with successful type checking, lint, formatting and production build. [Read the exact verification scope](docs/evidence/FRONTEND-COMPLETION.md).
 
 ## Who it is built for
 
