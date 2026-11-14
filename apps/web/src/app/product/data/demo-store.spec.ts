@@ -50,6 +50,15 @@ describe('Finandrome synthetic workflow', () => {
     expect(() => store.transition('FIN-2026-1048', 'Approved', 'Unauthorized')).toThrow();
   });
 
+  it('preserves the original customer when an officer edits a referred case', () => {
+    store.enter('Loan officer');
+    const app = store.applications().find((item) => item.status === 'Referred')!;
+    store.createApplication(app, false, app.id);
+    expect(store.findApplication(app.id)?.owner).toBe(app.owner);
+    store.enter('Customer');
+    expect(store.findApplication(app.id)).toBeUndefined();
+  });
+
   it('rejects an invalid application before changing state', () => {
     store.enter('Customer');
     const before = store.state().applications.length;

@@ -57,3 +57,7 @@ Real authentication, durable APIs/audit, private file storage, OCR, live models,
 ## Login recovery regression
 
 An open tab retained a reference to a removed lazy JavaScript chunk after a rebuild. Refreshing restored Branch manager access, verified in the user-facing browser. Login now displays a clear failure message and a Reload latest version action rather than leaving an unhandled navigation failure. A browser test aborts the workspace download, verifies the error, restores the connection, reloads and successfully enters as Branch manager. All 26 browser tests pass after this fix.
+
+## Deployment checks, 14 November 2026
+
+A clean lockfile install, type check, format check, lint and production build passed. All 93 unit tests and 28 browser tests passed. Regression coverage includes edits preserving customer ownership, cancelling a persona switch while intake is unsaved, and reloading after a workspace page fails to download. The production dependency audit returned zero findings. Nine moderate development-tool findings remain.

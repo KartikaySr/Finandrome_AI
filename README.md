@@ -25,7 +25,7 @@ These counts describe implemented frontend experiences. Live AI, authenticated s
 
 The five-phase frontend release includes a four-product catalog, saved customer profiles, draft and referred-case editing, evidence checklists, reviewer notes, synthetic document samples, loan schedules and receipt history, notifications, and administrator product availability controls. Intelligence previews support retry and no-evidence states. A built-in walkthrough connects the same case across customer, officer, manager and portfolio views.
 
-**Verified:** 92 unit tests and 26 browser tests pass, with successful type checking, lint, formatting and production build. [Read the exact verification scope](docs/evidence/FRONTEND-COMPLETION.md).
+**Verified:** 93 unit tests and 28 browser tests pass, with successful type checking, lint, formatting and production build. [Read the exact verification scope](docs/evidence/FRONTEND-COMPLETION.md).
 
 ## Who it is built for
 
@@ -310,7 +310,7 @@ Angular's persistent cache is disabled in this workspace to avoid a native LMDB 
 ## Deploy the frontend on Vercel
 
 1. Import [KartikaySr/Finandrome_AI](https://github.com/KartikaySr/Finandrome_AI) into Vercel.
-2. Set **Root Directory** to `apps/web`.
+2. Set **Root Directory** to `apps/web` and use the settings below. Alternatively, leave it at the repository root and use the install command, build command and output directory from the root `vercel.json`.
 3. Select the Angular preset and a Node version compatible with the locked dependency set.
 4. Use `npm ci` for installation and `npm run build` for the build.
 5. Use output directory `dist/finandrome/browser`.

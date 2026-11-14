@@ -519,3 +519,27 @@ test('manager entry explains a failed workspace download and recovers after relo
   await expect(page).toHaveURL(/workspace\/overview/);
   await expect(page.getByRole('combobox', { name: 'Demo persona' })).toHaveValue('Branch manager');
 });
+
+test('cancelled persona switch preserves the role and unsaved form', async ({ page }) => {
+  await enter(page, 'Customer');
+  await switchRole(page, 'Branch manager');
+  await expect(page.getByRole('link', { name: 'Approvals', exact: true })).toBeVisible();
+  await switchRole(page, 'Customer');
+  await page.goto('/workspace/applications/new');
+  await page.getByRole('textbox', { name: 'Full name' }).fill('Unsaved applicant');
+  page.once('dialog', (dialog) => dialog.dismiss());
+  await page.getByRole('combobox', { name: 'Demo persona' }).selectOption('Branch manager');
+  await expect(page.getByRole('combobox', { name: 'Demo persona' })).toHaveValue('Customer');
+  await expect(page.getByRole('textbox', { name: 'Full name' })).toHaveValue('Unsaved applicant');
+});
+
+test('workspace navigation failures offer recovery', async ({ page }) => {
+  await enter(page);
+  await page.route('**/chunk-*.js', (route) => route.abort());
+  await page.getByRole('link', { name: 'Products', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('This page could not load');
+  await page.unroute('**/chunk-*.js');
+  await page.getByRole('button', { name: 'Reload page', exact: true }).click();
+  await page.getByRole('link', { name: 'Products', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Find your next possibility.' })).toBeVisible();
+});

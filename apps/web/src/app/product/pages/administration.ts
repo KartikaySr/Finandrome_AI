@@ -33,8 +33,12 @@ export class AdministrationComponent {
   reducedMotion = this.store.state().preferences.reducedMotion;
   readonly error = signal('');
   save(): void {
-    if (!this.name.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) {
-      this.error.set('Enter a display name and a valid email.');
+    if (
+      !this.name.trim() ||
+      this.name.trim().length > 80 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)
+    ) {
+      this.error.set('Enter a display name of up to 80 characters and a valid email.');
       return;
     }
     this.store.savePreferences({

@@ -3,9 +3,9 @@ name: Finandrome frontend
 on:
   push:
     branches: [main]
-    paths: [apps/web/**, .github/workflows/frontend.yml]
+    paths: [apps/web/**, vercel.json, .github/workflows/frontend.yml]
   pull_request:
-    paths: [apps/web/**, .github/workflows/frontend.yml]
+    paths: [apps/web/**, vercel.json, .github/workflows/frontend.yml]
 
 permissions:
   contents: read

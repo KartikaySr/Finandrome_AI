@@ -199,9 +199,16 @@ export class ShellComponent {
           .slice(0, 5)
       : [],
   );
-  switchRole(value: string): void {
+  switchRole(select: HTMLSelectElement): void {
+    const value = select.value;
+    if (this.router.url === '/workspace/overview') {
+      this.store.enter(value as Role);
+      this.mobile.set(false);
+      return;
+    }
     void this.router.navigate(['/workspace/overview']).then((ok) => {
       if (ok) this.store.enter(value as Role);
+      else select.value = this.store.role() ?? '';
     });
     this.mobile.set(false);
   }

@@ -19,4 +19,10 @@
 
 -->
 <a class="skip-link" href="#main-content">Skip to main content</a>
+@if (navigationFailed()) {
+  <div class="notice warning" role="alert">
+    This page could not load. Reload for the latest version; saved demo records will remain.
+    <button type="button" class="button outline" (click)="reload()">Reload page</button>
+  </div>
+}
 <router-outlet />

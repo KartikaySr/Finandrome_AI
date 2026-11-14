@@ -16,8 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { NavigationEnd, NavigationError, Router, RouterOutlet } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'los-root',
@@ -26,5 +27,16 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.scss',
 })
 export class App {
+  readonly navigationFailed = signal(false);
+  constructor() {
+    const router = inject(Router);
+    router.events.pipe(takeUntilDestroyed()).subscribe((event) => {
+      if (event instanceof NavigationError) this.navigationFailed.set(router.url !== '/login');
+      if (event instanceof NavigationEnd) this.navigationFailed.set(false);
+    });
+  }
+  reload(): void {
+    window.location.reload();
+  }
   protected readonly title = signal('Finandrome AI');
 }

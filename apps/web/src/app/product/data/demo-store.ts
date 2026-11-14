@@ -28,10 +28,10 @@ const ALLOWED_ROLES: Role[] = [
 
 @Injectable({ providedIn: 'root' })
 export class DemoStore {
+  readonly storageAvailable = signal(true);
   readonly state = signal<DemoState>(this.loadState());
   readonly role = signal<Role | null>(this.loadRole());
   readonly toast = signal('');
-  readonly storageAvailable = signal(true);
   readonly canReview = computed(() =>
     ['Loan officer', 'Credit reviewer', 'Branch manager'].includes(this.role() ?? ''),
   );
@@ -156,8 +156,8 @@ export class DemoStore {
       score: 0,
       created: existing?.created ?? timestamp,
       updated: timestamp,
-      owner: 'customer-demo',
-      office: 'North Branch',
+      owner: existing?.owner ?? 'customer-demo',
+      office: existing?.office ?? 'North Branch',
       note: existing?.note ?? '',
     };
     this.update({
@@ -405,6 +405,7 @@ export class DemoStore {
       const role = sessionStorage.getItem(SESSION_KEY) as Role;
       return ALLOWED_ROLES.includes(role) ? role : null;
     } catch {
+      this.storageAvailable.set(false);
       return null;
     }
   }
@@ -429,7 +430,7 @@ export class DemoStore {
           })),
         } as DemoState;
     } catch {
-      /* A corrupt browser fixture is reset; there is no server data in this demo. */
+      this.storageAvailable.set(false);
     }
     return seedState();
   }

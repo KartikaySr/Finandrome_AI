@@ -106,7 +106,7 @@
       </button>
       <label class="role-switch"
         ><span class="sr-only">Demo persona</span
-        ><select [ngModel]="store.role()" (ngModelChange)="switchRole($event)">
+        ><select #persona [value]="store.role()" (change)="switchRole(persona)">
           @for (role of roles; track role) {
             <option [value]="role">{{ role }}</option>
           }
