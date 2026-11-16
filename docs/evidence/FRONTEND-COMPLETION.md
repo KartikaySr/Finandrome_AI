@@ -60,4 +60,4 @@ An open tab retained a reference to a removed lazy JavaScript chunk after a rebu
 
 ## Deployment checks, 14 November 2026
 
-A clean lockfile install, type check, format check, lint and production build passed. All 93 unit tests and 28 browser tests passed. Regression coverage includes edits preserving customer ownership, cancelling a persona switch while intake is unsaved, and reloading after a workspace page fails to download. The production dependency audit returned zero findings. Nine moderate development-tool findings remain.
+A clean lockfile install, type check, format check, lint and production build passed. All 93 unit tests and 28 browser tests passed. Regression coverage includes edits preserving customer ownership, cancelling a persona switch while intake is unsaved, and reloading after a workspace page fails to download. The production dependency audit returned zero findings. The nine development-tool findings reported on 14 November traced to one minimatch advisory. On 16 November, updating the ESLint lockfile and pinning the TypeScript lint parser’s minimatch dependency to 11.0.8 cleared the full npm audit. The frontend lint check passed.
